@@ -1,0 +1,14 @@
+[project]
+name = "health-rock-api"
+version = "0.1.0"
+description = "Centralized system for a policlynic"
+requires-python = ">= 3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pip-tools",
+  "pre-commit",
+  "ruff",
+  "mypy",
+]
