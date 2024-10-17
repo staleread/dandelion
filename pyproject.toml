@@ -1,9 +1,15 @@
 [project]
-name = "health-rock-api"
+name = "dandelion"
 version = "0.1.0"
 description = "Centralized system for a policlynic"
 requires-python = ">= 3.10"
-dependencies = []
+dependencies = [
+  "sqlalchemy",
+  "asyncpg",
+  "python-dotenv",
+  "pydantic",
+  "pydantic-settings",
+]
 
 [project.optional-dependencies]
 dev = [

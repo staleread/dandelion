@@ -4,6 +4,10 @@
 #
 #    pip-compile --extra=dev --output-file=dev-requirements.txt pyproject.toml
 #
+annotated-types==0.7.0
+    # via pydantic
+asyncpg==0.29.0
+    # via dandelion (pyproject.toml)
 build==1.2.2
     # via pip-tools
 cfgv==3.4.0
@@ -14,10 +18,12 @@ distlib==0.3.8
     # via virtualenv
 filelock==3.16.1
     # via virtualenv
+greenlet==3.1.1
+    # via sqlalchemy
 identify==2.6.1
     # via pre-commit
 mypy==1.11.2
-    # via health-rock-api (pyproject.toml)
+    # via dandelion (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
 nodeenv==1.9.1
@@ -25,21 +31,39 @@ nodeenv==1.9.1
 packaging==24.1
     # via build
 pip-tools==7.4.1
-    # via health-rock-api (pyproject.toml)
+    # via dandelion (pyproject.toml)
 platformdirs==4.3.6
     # via virtualenv
 pre-commit==3.8.0
-    # via health-rock-api (pyproject.toml)
+    # via dandelion (pyproject.toml)
+pydantic==2.9.2
+    # via
+    #   dandelion (pyproject.toml)
+    #   pydantic-settings
+pydantic-core==2.23.4
+    # via pydantic
+pydantic-settings==2.5.2
+    # via dandelion (pyproject.toml)
 pyproject-hooks==1.1.0
     # via
     #   build
     #   pip-tools
+python-dotenv==1.0.1
+    # via
+    #   dandelion (pyproject.toml)
+    #   pydantic-settings
 pyyaml==6.0.2
     # via pre-commit
 ruff==0.6.7
-    # via health-rock-api (pyproject.toml)
+    # via dandelion (pyproject.toml)
+sqlalchemy==2.0.35
+    # via dandelion (pyproject.toml)
 typing-extensions==4.12.2
-    # via mypy
+    # via
+    #   mypy
+    #   pydantic
+    #   pydantic-core
+    #   sqlalchemy
 virtualenv==20.26.5
     # via pre-commit
 wheel==0.44.0
