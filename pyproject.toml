@@ -4,11 +4,13 @@ version = "0.1.0"
 description = "Centralized system for a policlynic"
 requires-python = ">= 3.10"
 dependencies = [
+  "fastapi[standard]",
   "sqlalchemy",
   "asyncpg",
   "python-dotenv",
   "pydantic",
   "pydantic-settings",
+  "pyjwt",
 ]
 
 [project.optional-dependencies]
