@@ -8,8 +8,8 @@ from app.core.templating import TemplateResponse
 from .service import get_login_info
 from .repo import repo
 from .dto import LoginDto
-from .auth import Guest
-from .utils import extract_error_messages
+from .auth import Guest, Owner
+from .utils import extract_error_messages, get_rows_from_table
 
 router = APIRouter(prefix="/db")
 
@@ -97,24 +97,51 @@ async def logout():
 
 
 @router.get("/tables")
-async def list_tables(request: Request):
-    tables = list(map(lambda t: t["table_name"], repo.all_table_names()))
+async def list_tables(request: Request, user: Guest):
+    if not user:
+        return AnonymousUserRedirect
+
+    if not user.is_authorized:
+        return TemplateResponse(
+            request=request,
+            name="dba/errors/unauthorized.html",
+        )
+
+    tables = repo.all_table_names()
 
     return TemplateResponse(
         request=request, name="dba/tables.html", context={"tables": tables}
     )
 
 
-@router.get("/tables/{table_name}")
-async def view_table(request: Request, table_name: str):
+@router.get("/tables/user/view")
+async def view_users(request: Request, user: Owner):
+    return await view_table(request, "user", user)
+
+
+@router.get("/tables/{table_name}/view")
+async def view_table(request: Request, table_name: str, user: Guest):
+    if not user:
+        return AnonymousUserRedirect
+
+    if not user.is_authorized:
+        return TemplateResponse(
+            request=request,
+            name="dba/errors/unauthorized.html",
+        )
+
     try:
-        columns = repo.table_columns(table_name)
-        rows = repo.table_rows(table_name)
+        columns = list(repo.table_columns(table_name=table_name))
+        rows = get_rows_from_table(table_name)
 
         return TemplateResponse(
             request=request,
             name="dba/table_view.html",
-            context={"table_name": table_name, "columns": columns, "rows": rows},
+            context={
+                "table_name": table_name,
+                "columns": columns,
+                "rows": rows,
+            },
         )
     except Exception:
         return TemplateResponse(
