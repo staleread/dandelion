@@ -11,8 +11,6 @@ anyio==4.6.2.post1
     #   httpx
     #   starlette
     #   watchfiles
-asyncpg==0.29.0
-    # via dandelion (pyproject.toml)
 certifi==2024.8.30
     # via
     #   httpcore
@@ -54,6 +52,10 @@ markupsafe==3.0.2
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
+psycopg==3.2.3
+    # via dandelion (pyproject.toml)
+pugsql==0.3.1
+    # via dandelion (pyproject.toml)
 pydantic==2.9.2
     # via
     #   dandelion (pyproject.toml)
@@ -85,7 +87,7 @@ sniffio==1.3.1
     #   anyio
     #   httpx
 sqlalchemy==2.0.35
-    # via dandelion (pyproject.toml)
+    # via pugsql
 starlette==0.40.0
     # via fastapi
 typer==0.12.5
@@ -93,6 +95,7 @@ typer==0.12.5
 typing-extensions==4.12.2
     # via
     #   fastapi
+    #   psycopg
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
