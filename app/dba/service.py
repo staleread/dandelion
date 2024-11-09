@@ -6,7 +6,7 @@ from .models import UserLoginInfo
 from .auth import encode_user_login_info
 
 
-def get_login_info(dto: DeferredModel[LoginDto]) -> tuple[UserLoginInfo, str]:
+def get_login_token(dto: DeferredModel[LoginDto]) -> str:
     valid_dto = dto.validate()
 
     user = repo.user_by_username(username=valid_dto.username)
@@ -24,4 +24,4 @@ def get_login_info(dto: DeferredModel[LoginDto]) -> tuple[UserLoginInfo, str]:
 
     token = encode_user_login_info(login_info)
 
-    return login_info, token
+    return token

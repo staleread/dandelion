@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from app.common.exceptions import NotFoundException, PasswordsDontMatchException
 from app.core.templating import TemplateResponse
-from .service import get_login_info
+from .service import get_login_token
 from .repo import repo
 from .dto import LoginDto
 from .auth import Guest, Owner
@@ -57,13 +57,9 @@ async def handle_login_user(
 
     try:
         dto = LoginDto.defer(username=username, password=password)
-        login_info, token = get_login_info(dto)
+        token = get_login_token(dto)
 
-        response = TemplateResponse(
-            request=request,
-            name="dba/home.html",
-            context={"username": login_info.username},
-        )
+        response = RedirectResponse(url="/db", status_code=302)
         response.set_cookie(key="id_token", value=token)
 
         return response
