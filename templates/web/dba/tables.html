@@ -1,10 +1,10 @@
 {% extends "dba/table-base.html" %}
 
-{% block table_title %}Database Tables{% endblock %}
+{% block table_title %}Таблиці БД{% endblock %}
 {% block table_actions %}
 <a href="/db/tables/new"
     class="btn btn-sm btn-primary">
-    New table
+    Новий запис
 </a>
 {% endblock %}
 
@@ -12,8 +12,8 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Table Name</th>
-            <th class="text-right">Actions</th>
+            <th>Назва таблиці</th>
+            <th class="text-right">Дії</th>
         </tr>
     </thead>
     <tbody>
@@ -24,11 +24,11 @@
                 <div class="flex justify-end gap-2">
                     <a href="/db/tables/{{ table["table_name"] }}/view"
                     class="btn btn-sm btn-primary">
-                        View
+                        Переглянути
                     </a>
                     <a href="/db/tables/{{ table["table_name"] }}/delete"
                     class="btn btn-sm btn-error">
-                        Delete
+                        Видалити
                     </a>
                 </div>
             </td>

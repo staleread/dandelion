@@ -1,10 +1,10 @@
 {% extends "dba/table-base.html" %}
 
-{% block table_title %}{{ table_name }} table{% endblock %}
+{% block table_title %}Таблиця {{ table_name }}{% endblock %}
 {% block table_actions %}
 <a href="/db/tables/{{ table_name }}/new"
     class="btn btn-sm btn-primary">
-    New row
+    Новий запис
 </a>
 {% endblock %}
 
@@ -17,12 +17,12 @@
                 {{ column["column_name"] }}
                 <a href="/db/tables/{{ table_name }}/columns/{{ column["column_name"] }}/edit"
                 class="btn btn-sm btn-link edit-column-btn opacity-0 group-hover:opacity-100"
-                title="Edit column">
-                    Edit
+                title="Редагувати">
+                    Редагувати
                 </a>
             </th>
             {% endfor %}
-            <th class="text-right">Actions</th>
+            <th class="text-right">Дії</th>
         </tr>
     </thead>
     <tbody>
@@ -35,11 +35,11 @@
                 <div class="flex justify-end gap-2">
                     <a href="/db/tables/{{ table_name }}/rows/{{ row["id"] }}/edit"
                     class="btn btn-sm btn-primary">
-                        Edit
+                        Редагувати
                     </a>
                     <a href="/db/tables/{{ table_name }}/rows/{{ row["id"] }}/delete"
                     class="btn btn-sm btn-error">
-                        Delete
+                        Видалити
                     </a>
                 </div>
             </td>
