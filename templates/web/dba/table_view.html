@@ -1,0 +1,41 @@
+{% extends "dba/table-base.html" %}
+
+{% block table_title %}{{ table_name }} table{% endblock %}
+{% block table_content %}
+<table class="table">
+    <thead>
+        <tr>
+            {% for column in columns %}
+            <th class="group relative">
+                {{ column["column_name"] }}
+                <a href="/db/tables/{{ table_name }}/columns/{{ column["column_name"] }}/edit" 
+                class="btn btn-sm btn-link edit-column-btn opacity-0 group-hover:opacity-100"
+                title="Edit column">
+                    Edit
+                </a>
+            </th>
+            {% endfor %}
+            <th class="text-right">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            {% for column in columns %}
+                <td>{{ row[column["column_name"]] }}</td>
+            {% endfor %}
+            <td class="text-right">
+                <a href="/db/tables/{{ table_name }}/rows/{{ row["id"] }}/edit" 
+                class="btn btn-sm btn-primary">
+                    Edit
+                </a>
+                <a href="/db/tables/{{ table_name }}/rows/{{ row["id"] }}/delete" 
+                class="btn btn-sm btn-danger">
+                    Delete
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
