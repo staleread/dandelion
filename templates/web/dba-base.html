@@ -2,7 +2,11 @@
 {% block title_shema %}Dandelion DB{% endblock %}
 {% block menu %}
   <ul>
-    <li><a>Table A</a></li>
+    <li>
+      <a href="{{ url_for('list_tables') }}" class="{% if request.url.path == '/db/tables' %}active{% endif %}">
+        Tables
+      </a>
+    </li>
     <li><a>Table A</a></li>
     <li><a>Table A</a></li>
     <li><a>Table A</a></li>
@@ -21,7 +25,7 @@
 {% block logo_shema %}dandelion-db{% endblock %}
 {% block logo_url %}/db{% endblock %}
 {% block actions %}
-  <a href="/db/logout">
+  <a href="{{ url_for('logout') }}">
     <svg 
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24" fill="currentColor"

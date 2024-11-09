@@ -1,0 +1,58 @@
+{% extends "dba/base.html" %}
+
+{% block content %}
+<h2>{{ table_name }}</h2>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                <th class="position-relative">
+                    {{ column.name }}
+                    <a href="/db/tables/{{ table_name }}/columns/{{ column.name }}/edit" 
+                       class="btn btn-sm btn-link edit-column-btn"
+                       title="Edit column">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                </th>
+                {% endfor %}
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for column in columns %}
+                <td>{{ row[column.name] }}</td>
+                {% endfor %}
+                <td>
+                    <a href="/db/tables/{{ table_name }}/rows/{{ row.id }}/edit" 
+                       class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="/db/tables/{{ table_name }}/rows/{{ row.id }}/delete" 
+                       class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.edit-column-btn {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+th:hover .edit-column-btn {
+    display: inline-block;
+}
+</style>
+{% endblock %} 

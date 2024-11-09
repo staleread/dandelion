@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from app.common.exceptions import NotFoundException, PasswordsDontMatchException
 from app.core.templating import TemplateResponse
 from .service import get_login_info
+from .repo import repo
 from .dto import LoginDto
 from .auth import Guest
 from .utils import extract_error_messages
@@ -93,3 +94,30 @@ async def logout():
     response.delete_cookie(key="id_token")
 
     return response
+
+
+@router.get("/tables")
+async def list_tables(request: Request):
+    tables = list(map(lambda t: t["table_name"], repo.all_table_names()))
+
+    return TemplateResponse(
+        request=request, name="dba/tables.html", context={"tables": tables}
+    )
+
+
+@router.get("/tables/{table_name}")
+async def view_table(request: Request, table_name: str):
+    try:
+        columns = repo.table_columns(table_name)
+        rows = repo.table_rows(table_name)
+
+        return TemplateResponse(
+            request=request,
+            name="dba/table_view.html",
+            context={"table_name": table_name, "columns": columns, "rows": rows},
+        )
+    except Exception:
+        return TemplateResponse(
+            request=request,
+            name="dba/errors/internal.html",
+        )
