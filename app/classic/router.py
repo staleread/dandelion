@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from app.core.templating import TemplateResponse
+from app.core.templating import templates
 
 router = APIRouter()
 
@@ -11,4 +11,6 @@ async def get_tables_page(request: Request):
             "username": "Nicolas",
         }
     }
-    return TemplateResponse(request=request, name="classic/home.html", context=context)
+    return templates.TemplateResponse(
+        request=request, name="classic/home.html", context=context
+    )

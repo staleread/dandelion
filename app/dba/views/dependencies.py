@@ -1,39 +1,15 @@
-import jwt
 from typing import Annotated
-from datetime import datetime, timezone, timedelta
+from pydantic.dataclasses import dataclass
 from fastapi import Cookie, Depends
 
-from app.core.config import Settings
-from .models import UserLoginInfo, UserInfo
-from .enums import Permission
+from .utils.jwt import decode_user_login_info
+from ..domain.enums import Permission
 
 
-settings = Settings()  # type: ignore
-
-key = settings.jwt_secret
-algorithm = settings.jwt_algorithm
-exp_seconds = settings.jwt_lifetime
-
-
-def encode_user_login_info(login_info: UserLoginInfo) -> str:
-    data = {
-        "exp": get_timestamp_after_seconds(exp_seconds),
-        "user_data": login_info.model_dump(),
-    }
-    return jwt.encode(data, key, algorithm=algorithm)
-
-
-def decode_user_login_info(token: str) -> UserLoginInfo | None:
-    try:
-        payload = jwt.decode(token, key, algorithms=[algorithm])
-        return UserLoginInfo(**payload["user_data"])
-    except jwt.ExpiredSignatureError:
-        return None
-
-
-def get_timestamp_after_seconds(seconds: int) -> int:
-    moment = datetime.now(tz=timezone.utc) + timedelta(seconds=seconds)
-    return int(moment.timestamp())
+@dataclass
+class UserInfo:
+    username: str
+    is_authorized: bool = False
 
 
 def current_user(*permissions: set[Permission]):

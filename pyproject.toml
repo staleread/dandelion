@@ -15,6 +15,7 @@ dependencies = [
   "pydantic",
   "pydantic-settings",
   "pyjwt",
+  "bcrypt",
 ]
 
 [project.optional-dependencies]

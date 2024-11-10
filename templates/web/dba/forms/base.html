@@ -1,0 +1,17 @@
+{% extends "dba/base.html" %}
+
+{% block content %}
+<div class="hero bg-base-200" style="min-height: calc(100vh - 64px);">
+    <div class="hero-content flex-col"> 
+        <div class="text-center">
+            <h1 class="text-3xl font-bold py-6">{% block form_title %}{% endblock %}</h1>
+        </div>
+        <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+            <form action="{{ form_action }}" method="post" class="card-body">
+                {{ csrf_input }}
+                {% block form_content %}{% endblock %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

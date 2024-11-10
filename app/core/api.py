@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.classic.router import router as classic_router
-from app.dba.router import router as dba_router
+from app.dba.views.routes import router as dba_router
 
 api_router = APIRouter()
 

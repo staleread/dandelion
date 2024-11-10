@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     jwt_secret: str
     jwt_algorithm: str
     jwt_lifetime: int
+    hash_salt: str
     db_user: str
     db_pass: str
     db_host: str
