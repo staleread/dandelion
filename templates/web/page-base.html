@@ -28,7 +28,7 @@
         </div>
       </div>
     </div>
-    <a 
+    <a
       href="{% block logo_url %}{% endblock %}"
       class="navbar-center btn btn-ghost"
     >
@@ -36,7 +36,12 @@
     </a>
     <div class="navbar-end flex gap-4 mr-2">
       <label class="swap swap-rotate">
-        <input type="checkbox" class="theme-controller" value="dim" />
+        <input
+          id="theme-controller"
+          type="checkbox"
+          class="theme-controller"
+          value="dim"
+        />
 
         <svg
           class="swap-off size-7 fill-current"
@@ -70,4 +75,19 @@
       </a>
     </nav>
   </footer>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  const themeController = document.querySelector('#theme-controller');
+
+  themeController.addEventListener('change', () => {
+    setIsDark(themeController.checked);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    themeController.checked = getIsDark();
+  });
+</script>
 {% endblock %}

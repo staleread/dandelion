@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="emerald">
+<html lang="en">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}{% endblock %}</title>
@@ -11,5 +11,21 @@
 {% block header %}{% endblock %}
 {% block content %}{% endblock %}
 {% block footer %}{% endblock %}
+{% block scripts %}
+<script>
+  function setIsDark(isDark) {
+    localStorage.setItem('theme', isDark ? 'dim' : 'emerald');
+    document.documentElement.setAttribute('data-theme', isDark ? 'dim' : 'emerald');
+  }
+
+  function getIsDark() {
+    return localStorage.getItem('theme') === 'dim';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setIsDark(getIsDark());
+  });
+</script>
+{% endblock %}
 </body>
 </html>
