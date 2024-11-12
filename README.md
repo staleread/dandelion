@@ -154,6 +154,4 @@ see a form for updating the entry or creating one if it was blank.
 ## UI requirements
 
 - Language of UI - Ukrainian
-- Displaying a table, the attributes must be in Ukrainian if
-the translation metadata is provided (if table exists in `dandelion-classic`
-logic, it must have this metadata specified)
+- Displaying a table, the attributes must be in Ukrainian
