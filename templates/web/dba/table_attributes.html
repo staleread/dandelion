@@ -22,6 +22,7 @@
     <th>Тип</th>
     <th>ID</th>
     <th>Унікальний</th>
+    <th>Обов'язковий</th>
     <th>Послання</th>
     {% if not table.is_protected %}
         <th class="text-right">Дії</th>
@@ -46,6 +47,17 @@
             </td>
             <td>
                 {% if row.is_unique %}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-success">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-error">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                {% endif %}
+            </td>
+            <td>
+                {% if not row.is_nullable %}
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-success">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
