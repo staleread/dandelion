@@ -1,73 +1,167 @@
-import pugsql  # type: ignore
-from sqlalchemy import text
-from app.core.engine import engine
-from .models import User, Table, Attribute
+from sqlalchemy.engine import Connection
 
-queries = pugsql.module("queries/dba/")
-queries.setengine(engine)
+from app.common.utils.sql_runner import SqlRunner
+from .models import User, Table, Permission, DataType
 
 
-def find_user(*, username: str) -> User | None:
-    result = queries.find_user(username=username)
-    return User(**result) if result else None
-
-
-def get_role_permissions(*, role_id: int) -> list[str]:
-    return list(map(lambda x: x["name"], queries.get_role_permissions(role_id=role_id)))
-
-
-def get_all_tables() -> list[Table]:
-    return list(map(lambda x: Table(**x), queries.get_all_tables()))
-
-
-def get_private_table(*, table_id: int) -> Table | None:
-    result = queries.get_private_table(table_id=table_id)
-    return Table(**result) if result else None
-
-
-def get_public_table(*, table_id: int) -> Table | None:
-    result = queries.get_public_table(table_id=table_id)
-    return Table(**result) if result else None
-
-
-def get_table(*, table_id: int) -> Table | None:
-    result = queries.get_table(table_id=table_id)
-    return Table(**result) if result else None
-
-
-def get_table_attributes(*, table_id: int) -> list[Attribute]:
-    return list(
-        map(lambda x: Attribute(**x), queries.get_table_attributes(table_id=table_id))
+def find_user(*, username: str, connection: Connection) -> User | None:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+        select * from "user" where username = :username
+    """)
+        .bind(username=username)
+        .first(User)
     )
 
 
-def get_attribute_columns() -> list[dict]:
-    return [
-        {"name": "name", "ukr_name": "назва"},
-        {"name": "type", "ukr_name": "тип"},
-    ]
+def get_role_permissions(*, role_id: int, connection: Connection) -> list[Permission]:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+        select p.name from "role" r
+        join "role_permission" rp on rp."role_id" = r.id
+        join "permission" p on p.id = rp."permission_id"
+        where r.id = :role_id
+    """)
+        .bind(role_id=role_id)
+        .many(lambda x: Permission(x["name"]))
+    )
 
 
-def get_table_rows(*, table_title: str) -> list[dict]:
-    with engine.connect() as connection:
-        query = text(f'select * from "{table_title}"')
-        result = connection.execute(query)
-        return [dict(row._mapping) for row in result]
+def table_exists(*, table_title: str, connection: Connection) -> bool:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+        select exists (select 1 from metadata.table where title = :table_title)
+    """)
+        .bind(table_title=table_title)
+        .one(lambda x: x["exists"])
+    )
 
 
-def table_exists(*, table_title: str) -> bool:
-    return bool(queries.table_exists(table_title=table_title))
+def create_table_from_template(*, table_title: str, connection: Connection):
+    return (
+        SqlRunner(connection=connection)
+        .query(f"""
+        create table "{table_title}" (id serial primary key)
+    """)
+        .run_unsafe()
+    )
 
 
-def insert_table(*, table_title: str):
-    with engine.connect() as connection:
-        query = text(f'create table "{table_title}" (id serial primary key)')
-        connection.execute(query)
+def insert_table_metadata(
+    *, table_title: str, is_private: bool, is_protected: bool, connection: Connection
+):
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+        insert into metadata.table (title, is_private, is_protected)
+        values (:table_title, :is_private, :is_protected)
+        returning id
+    """)
+        .bind(table_title=table_title, is_private=is_private, is_protected=is_protected)
+        .one(lambda x: x["id"])
+    )
 
 
-def insert_table_metadata(*, table_title: str, is_private: bool, is_protected: bool):
-    return queries.insert_table_metadata(
-        table_title=table_title,
-        is_private=is_private,
-        is_protected=is_protected,
+def get_data_type_by_id(
+    *, data_type_id: int, connection: Connection
+) -> DataType | None:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+            select * from metadata.data_type 
+            where id = :data_type_id
+        """)
+        .bind(data_type_id=data_type_id)
+        .first(DataType)
+    )
+
+
+def find_table_by_id(*, table_id: int, connection: Connection) -> Table | None:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+            select * from metadata.table where id = :table_id
+        """)
+        .bind(table_id=table_id)
+        .first(Table)
+    )
+
+
+def attribute_exists(*, table_id: int, name: str, connection: Connection) -> bool:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+            select exists (select 1 from metadata.attribute where table_id = :table_id and name = :name)
+        """)
+        .bind(table_id=table_id, name=name)
+        .one(lambda x: x["exists"])
+    )
+
+
+def add_column_to_table(
+    *,
+    table_title: str,
+    column_name: str,
+    data_type: str,
+    is_nullable: bool,
+    connection: Connection,
+):
+    nullable_str = "" if is_nullable else "NOT NULL"
+    return (
+        SqlRunner(connection=connection)
+        .query(f"""
+            ALTER TABLE "{table_title}" 
+            ADD COLUMN "{column_name}" {data_type} {nullable_str}
+        """)
+        .run_unsafe()
+    )
+
+
+def insert_attribute_metadata(
+    *,
+    table_id: int,
+    name: str,
+    ukr_name: str,
+    data_type_id: int,
+    is_primary: bool,
+    is_unique: bool,
+    is_nullable: bool,
+    connection: Connection,
+):
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+        INSERT INTO metadata.attribute (
+            table_id, 
+            name, 
+            ukr_name, 
+            data_type_id,
+            is_primary,
+            is_unique,
+            is_nullable
+        )
+        VALUES (
+            :table_id, 
+            :name, 
+            :ukr_name, 
+            :data_type_id,
+            :is_primary,
+            :is_unique,
+            :is_nullable
+        )
+        RETURNING id
+    """)
+        .bind(
+            table_id=table_id,
+            name=name,
+            ukr_name=ukr_name,
+            data_type_id=data_type_id,
+            is_primary=is_primary,
+            is_unique=is_unique,
+            is_nullable=is_nullable,
+        )
+        .one(lambda x: x["id"])
     )

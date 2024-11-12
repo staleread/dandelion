@@ -1,7 +1,8 @@
-{% extends "dba/base.html" %}
-{% block title_page %}Home{% endblock %}
+{% extends "base/page.html" %}
+
+{% block title_page %}Домівка{% endblock %}
 {% block content %}
-<div class="hero bg-base-200 min-h-screen">
+<div class="hero bg-base-200 min-h-screen" style="min-height: calc(100vh - 64px);">
   <div class="hero-content text-center">
     <div class="max-w-md">
       <h1 class="text-5xl font-bold">З поверненням, {{ username }}!</h1>

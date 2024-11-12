@@ -1,0 +1,30 @@
+{% extends "base/page.html" %}
+
+{% block page_content %}
+<div class="flex justify-between items-center mb-6">
+    <div class="flex items-center gap-2">
+        {% block table_icon %}{% endblock %}
+        <h1 class="text-2xl font-semibold">
+            {% block table_title %}{% endblock %}
+        </h1>
+    </div>
+    {% block table_actions %}{% endblock %}
+</div>
+
+<div class="card bg-base-100 rounded-xl">
+    <div class="card-body">
+        <div class="overflow-x-auto overflow-y-visible pb-7">
+            <table class="table table-pin-rows">
+                <thead>
+                    <tr>
+                        {% block table_header_row %}{% endblock %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% block table_body %}{% endblock %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

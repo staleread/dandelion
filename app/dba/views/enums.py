@@ -10,5 +10,5 @@ class DbaTemplate(StrEnum):
     TABLE_NEW = "dba/forms/table_new.html"
     ATTRIBUTE_NEW = "dba/forms/attribute_new.html"
     INTERNAL_ERROR = "dba/errors/internal.html"
-    UNAUTHORIZED_ERROR = "dba/errors/unauthorized.html"
+    FORBIDDEN_ERROR = "dba/errors/forbidden.html"
     NOT_FOUND_ERROR = "dba/errors/not_found.html"
