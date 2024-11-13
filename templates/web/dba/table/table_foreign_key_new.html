@@ -12,6 +12,14 @@
 
 
 {% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-64 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
 <div class="form-control">
     <label for="local_table_id" class="form-label">Локальна таблиця</label>
     <input type="text" 
@@ -32,11 +40,6 @@
         </option>
         {% endfor %}
     </select>
-    {% if errors["target_table_id"] %}
-    <span class="text-sm text-red-500">
-        {{ errors["target_table_id"] }}
-    </span>
-    {% endif %}
 </div>
 
 <div class="form-control">
@@ -52,11 +55,6 @@
             Багато до багатьох
         </option>
     </select>
-    {% if errors["relationship_type"] %}
-    <span class="text-sm text-red-500">
-        {{ errors["relationship_type"] }}
-    </span>
-    {% endif %}
 </div>
 
 <div class="form-control" id="local_attribute_name_container">
@@ -69,11 +67,6 @@
            name="local_attribute_name"
            value="{{ local_attribute_name }}"
            placeholder="Введіть назву...">
-    {% if errors["local_attribute_name"] %}
-    <span class="text-sm text-red-500">
-        {{ errors["local_attribute_name"] }}
-    </span>
-    {% endif %}
 </div>
 
 <div class="form-control">
@@ -89,11 +82,6 @@
             NO ACTION - Без дій
         </option>
     </select>
-    {% if errors["on_update"] %}
-    <span class="text-sm text-red-500">
-        {{ errors["on_update"] }}
-    </span>
-    {% endif %}
 </div>
 
 <div class="form-control">
@@ -112,11 +100,6 @@
             NO ACTION - Без дій
         </option>
     </select>
-    {% if errors["on_delete"] %}
-    <span class="text-sm text-red-500">
-        {{ errors["on_delete"] }}
-    </span>
-    {% endif %}
 </div>
 {% endblock %}
 

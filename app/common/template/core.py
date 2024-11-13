@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 
 
 def set_schema(request: Request) -> dict:
-    schema = "dba" if request.url.path.startswith("/db") else "classic"
+    schema = "dba" if request.url.path.startswith("/dba") else "classic"
     return {"schema": schema}
 
 

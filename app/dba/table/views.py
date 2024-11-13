@@ -1,13 +1,18 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from app.common.database.utils import QueryRunnerDep, ConnectionDep
+from app.common.database.utils import QueryRunnerDep, ConnectionDep, SqlRunner
 from app.common.template.utils import TemplateModelDep
-from app.common.exceptions import ValidationException
 
 from ..auth.enums import Permissions
-from ..auth.utils import get_guest_user, get_admin_user, get_owner_user, GuestDep
+from ..auth.utils import (
+    get_guest_user,
+    get_admin_user,
+    get_owner_user,
+    get_operator_user,
+    GuestDep,
+)
 from ..table_row.service import get_table_rows
 from ..table_attribute.service import (
     get_table_attributes,
@@ -23,12 +28,16 @@ from .models import (
     AttributeSecondaryCreate,
     AttributeSecondaryCreateResponse,
     TableRowsView,
+    RowCreateResponse,
+    RowUpdateResponse,
 )
 from .service import (
     create_table,
     find_table_by_id,
     create_secondary_table_attribute,
     delete_table,
+    add_row,
+    update_row,
 )
 
 
@@ -58,10 +67,10 @@ async def post_new_table_form(
     try:
         create_table(connection=connection, table_create=table_create)
         return RedirectResponse(url="/dba/table", status_code=302)
-    except ValidationException as e:
+    except ValueError as e:
         failure_response = TableCreateResponse(
             **table_create.model_dump(),
-            errors={e.source: e.message},
+            error=str(e),
         )
         return template("dba/table/table_new.html", failure_response)
 
@@ -74,8 +83,8 @@ async def delete_table_handler(
     try:
         delete_table(connection=connection, table_id=table_id)
         return RedirectResponse(url="/dba/table", status_code=302)
-    except ValidationException as e:
-        raise HTTPException(status_code=400, detail=e.message)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{table_id}/attribute", dependencies=[Depends(get_guest_user())])
@@ -90,8 +99,6 @@ async def get_table_attributes_view(
     rich_attributes = get_table_rich_attributes(
         connection=connection, table_id=table_id
     )
-
-    print(rich_attributes)
 
     return template(
         "dba/table/table_attributes.html",
@@ -132,7 +139,7 @@ async def post_attribute_secondary_create_form(
         )
 
         return RedirectResponse(url=f"/dba/table/{table_id}/attribute", status_code=302)
-    except ValidationException as e:
+    except ValueError as e:
         table = find_table_by_id(connection=connection, table_id=table_id)
 
         if not table:
@@ -144,7 +151,7 @@ async def post_attribute_secondary_create_form(
             **attribute_create.model_dump(),
             table=table,
             data_types=data_types,
-            errors={e.source: e.message},
+            error=str(e),
         )
 
         return template("dba/table/table_attribute_new.html", failure_response)
@@ -170,3 +177,140 @@ async def get_table_rows_view(
         "dba/table/table_rows.html",
         TableRowsView(table=table, attributes=attributes, rows=rows),
     )
+
+
+@router.get("/{table_id}/row/new", dependencies=[Depends(get_admin_user())])
+async def get_row_create_form(
+    table_id: int,
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise HTTPException(status_code=404)
+
+    attributes = [
+        attr
+        for attr in get_table_attributes(connection=connection, table_id=table_id)
+        if attr.data_type != "serial"
+    ]
+
+    view = RowCreateResponse(table=table, attributes=attributes)
+
+    return template("dba/table/table_row_new.html", view)
+
+
+@router.post("/{table_id}/row/new", dependencies=[Depends(get_operator_user())])
+async def post_row_create_form(
+    table_id: int,
+    request: Request,
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    table = find_table_by_id(connection=connection, table_id=table_id)
+
+    if not table:
+        raise HTTPException(status_code=404)
+
+    form_data = await request.form()
+    row_data = dict(form_data)
+
+    try:
+        add_row(
+            connection=connection,
+            table_id=table_id,
+            values=row_data,
+        )
+        return RedirectResponse(url=f"/dba/table/{table_id}/row", status_code=302)
+    except ValueError as e:
+        attributes = [
+            attr
+            for attr in get_table_attributes(connection=connection, table_id=table_id)
+            if attr.data_type != "serial"
+        ]
+
+        return template(
+            "dba/table/table_row_new.html",
+            RowCreateResponse(
+                table=table,
+                attributes=attributes,
+                values=row_data,
+                error=str(e),
+            ),
+        )
+
+
+@router.get("/{table_id}/row/{row_id}/edit", dependencies=[Depends(get_admin_user())])
+async def get_row_update_form(
+    table_id: int,
+    row_id: int,
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise HTTPException(status_code=404)
+
+    row = (
+        SqlRunner(connection=connection)
+        .query(f'select * from "{table.title}" where id = :row_id')
+        .bind(row_id=row_id)
+        .one()
+    )
+
+    if not row:
+        raise HTTPException(status_code=404)
+
+    attributes = [
+        attr
+        for attr in get_table_attributes(connection=connection, table_id=table_id)
+        if attr.data_type != "serial"
+    ]
+
+    return template(
+        "dba/table/table_row_edit.html",
+        RowUpdateResponse(
+            table=table, attributes=attributes, row_id=row_id, values=row
+        ),
+    )
+
+
+@router.post(
+    "/{table_id}/row/{row_id}/edit", dependencies=[Depends(get_operator_user())]
+)
+async def post_row_update_form(
+    table_id: int,
+    row_id: int,
+    request: Request,
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise HTTPException(status_code=404)
+
+    attributes = [
+        attr
+        for attr in get_table_attributes(connection=connection, table_id=table_id)
+        if attr.data_type != "serial"
+    ]
+
+    form_data = await request.form()
+    row_data = dict(form_data)
+
+    try:
+        update_row(
+            connection=connection, table_id=table_id, row_id=row_id, values=row_data
+        )
+        return RedirectResponse(url=f"/dba/table/{table_id}/row", status_code=302)
+    except ValueError as e:
+        return template(
+            "dba/table/table_row_edit.html",
+            RowUpdateResponse(
+                table=table,
+                attributes=attributes,
+                row_id=row_id,
+                values=row_data,
+                error=str(e),
+            ),
+        )

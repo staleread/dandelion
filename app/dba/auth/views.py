@@ -3,7 +3,6 @@ from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
 from app.config import settings
-from app.common.exceptions import ValidationException
 from app.common.template.utils import TemplateModelDep
 from app.common.database.utils import ConnectionDep
 
@@ -32,10 +31,10 @@ async def post_login_form(
         response.set_cookie(key=settings.cookie_name, value=token)
 
         return response
-    except ValidationException as e:
+    except ValueError as e:
         failure_response = UserLoginResponse(
             **user_login.model_dump(),
-            errors={e.source: e.message},
+            error=str(e),
         )
         return template("dba/auth/login.html", failure_response)
 

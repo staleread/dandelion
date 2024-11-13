@@ -5,7 +5,7 @@
     <div class="text-center">
         <h1 class="text-5xl font-bold py-6">{% block form_title %}{% endblock %}</h1>
     </div>
-    <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+    <div class="card bg-base-100 w-full shrink-0 shadow-2xl max-w-80">
         <form action="{% block form_action %}{% endblock %}" method="post" class="card-body flex flex-col gap-4">
             {{ csrf_input }}
             {% block form_content %}{% endblock %}

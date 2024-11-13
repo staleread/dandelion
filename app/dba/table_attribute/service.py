@@ -1,6 +1,5 @@
 from sqlalchemy.engine import Connection
 
-from app.common.exceptions import ValidationException
 from app.common.database.utils import SqlRunner
 
 from .enums import DataTypes
@@ -95,18 +94,14 @@ def insert_table_attribute(
     data_type = _find_data_type_by_id(connection=connection, data_type_id=data_type_id)
 
     if not data_type:
-        raise ValidationException(
-            source="data_type_id", message="Недопустимий тип даних"
-        )
+        raise ValueError("Недопустимий тип даних")
 
     if _attribute_exists(
         connection=connection,
         table_id=table_id,
         name=name,
     ):
-        raise ValidationException(
-            source="name", message="Атрибут з таким ім'ям вже існує"
-        )
+        raise ValueError("Атрибут з таким ім'ям вже існує")
 
     nullable_str = "" if is_nullable else "not null"
     unique_str = "unique" if is_unique and not is_primary else ""
@@ -114,7 +109,7 @@ def insert_table_attribute(
 
     SqlRunner(connection=connection).query(f"""
         alter table "{table_title}" 
-        add column {unique_str} "{name}" {data_type.name} {nullable_str} {primary_str}
+        add column "{name}" {data_type.name} {nullable_str} {primary_str} {unique_str} 
     """).run_unsafe()
 
     return _insert_table_attribute_metadata(
@@ -131,25 +126,19 @@ def insert_table_attribute(
 
 def _validate_attribute_name(value: str) -> str:
     if not value:
-        raise ValidationException(
-            source="name", message="Ім'я атрибута не може бути порожнім"
-        )
+        raise ValueError("Ім'я атрибута не може бути порожнім")
 
     if len(value) > 30:
-        raise ValidationException(
-            source="name", message="Ім'я атрибута має містити не більше 30 символів"
-        )
+        raise ValueError("Ім'я атрибута має містити не більше 30 символів")
 
     if value.startswith("_") or value.endswith("_"):
-        raise ValidationException(
-            source="name",
-            message="Ім'я атрибута не може починатися або закінчуватися символом підкреслення",
+        raise ValueError(
+            "Ім'я атрибута не може починатися або закінчуватися символом підкреслення"
         )
 
     if not all(c.islower() or c == "_" for c in value):
-        raise ValidationException(
-            source="name",
-            message="Ім'я атрибута може містити лише малі літери англійського алфавіту та символ підкреслення",
+        raise ValueError(
+            "Ім'я атрибута може містити лише малі літери англійського алфавіту та символ підкреслення"
         )
 
     return value

@@ -4,7 +4,7 @@
 {% block table_title %}Записи таблиці '{{ table.title }}'{% endblock %}
 
 {% block table_actions %}
-<a href="/dba/table/{{ table.id }}/new"
+<a href="/dba/table/{{ table.id }}/row/new"
     class="btn btn-sm btn-primary">
     Новий запис
 </a>
@@ -45,7 +45,7 @@
     {% for row in rows %}
     <tr class="hover">
         {% for attribute in attributes %}
-            <td>{{ row[attribute.name] }}</td>
+            <td>{{ row[attribute.name] if row[attribute.name] is not none else "NULL" }}</td>
         {% endfor %}
         <td class="text-right">
             <div class="dropdown dropdown-left">

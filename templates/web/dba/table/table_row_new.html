@@ -1,0 +1,65 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Новий запис{% endblock %}
+{% block form_title %}Новий запис{% endblock %}
+{% block form_action %}/dba/table/{{ table.id }}/row/new{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/dba/table">Таблиці</a></li>
+    <li><a href="/dba/table/{{ table.id }}/row">Записи таблиці '{{ table.title }}'</a></li>
+    <li>Створення нового запису</li>
+{% endblock %}
+
+{% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-64 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
+{% for attr in attributes %}
+<div class="form-control">
+    <label class="label">
+        {{ attr.ukr_name }}
+        {% if not attr.is_nullable %}*{% endif %}
+    </label>
+    
+    {% if attr.data_type in ['text', 'varchar'] %}
+        <input type="text" 
+                name="{{ attr.name }}"
+                value="{{ values[attr.name] or '' }}"
+                {% if not attr.is_nullable %}required{% endif %}
+                class="input input-bordered w-full">
+    {% elif attr.data_type in ['integer'] %}
+        <input type="number" 
+                name="{{ attr.name }}"
+                value="{{ values[attr.name] or '' }}"
+                {% if not attr.is_nullable %}required{% endif %}
+                class="input input-bordered w-full">
+    {% elif attr.data_type in ['boolean'] %}
+        <input type="checkbox" 
+                name="{{ attr.name }}"
+                {% if values[attr.name] %}checked{% endif %}
+                {% if not attr.is_nullable %}required{% endif %}
+                class="checkbox checkbox-primary">
+    {% elif attr.data_type in ['date', 'timestamp'] %}
+        <input type="datetime-local" 
+                name="{{ attr.name }}"
+                value="{{ values[attr.name] or '' }}"
+                {% if not attr.is_nullable %}required{% endif %}
+                class="input input-bordered w-full">
+    {% endif %}
+</div>
+{% endfor %}
+{% endblock %} 
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/dba/table/{{ table.id }}/row" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Створити</button>
+</div>
+{% endblock %}

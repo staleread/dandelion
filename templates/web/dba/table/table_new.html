@@ -10,39 +10,32 @@
 {% endblock %}
 
 {% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-64 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
 <div class="form-control">
     <label for="title">Назва таблиці</label>
-    <input type="text" class="input input-bordered {% if errors.title %}input-error{% endif %}" id="title" name="title" required
+    <input type="text" class="input input-bordered" id="title" name="title" required
         value="{{ title }}"
         placeholder="e.g. patient"
     >
-    {% if errors.title %}
-    <label class="label">
-        <span class="label-text-alt text-error">{{ errors.title }}</span>
-    </label>
-    {% endif %}
 </div>
 <label class="cursor-pointer label">
-    <span class="label-text">Приватна таблиця</span>
-    <input type="checkbox" class="checkbox" id="is_private" name="is_private"
+    <span class="label-text">Приватна</span>
+    <input type="checkbox" class="toggle" id="is_private" name="is_private"
         {% if is_private %}checked{% endif %}
     >
-    {% if errors.is_private %}
-    <label class="label">
-        <span class="label-text-alt text-error">{{ errors.is_private }}</span>
-    </label>
-    {% endif %}
 </label>
 <label class="cursor-pointer label">
-    <span class="label-text">Захищена таблиця</span>
-    <input type="checkbox" class="checkbox" id="is_protected" name="is_protected"
+    <span class="label-text">Захищена</span>
+    <input type="checkbox" class="toggle" id="is_protected" name="is_protected"
         {% if is_protected %}checked{% endif %}
     >
-    {% if errors.is_protected %}
-    <label class="label">
-        <span class="label-text-alt text-error">{{ errors.is_protected }}</span>
-    </label>
-    {% endif %}
 </label>
 {% endblock %}
 

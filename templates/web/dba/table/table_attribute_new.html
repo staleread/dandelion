@@ -11,45 +11,38 @@
 {% endblock %}
 
 {% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-64 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
 <input type="hidden" name="table_id" value="{{ table.id }}">
 <div class="form-control">
     <label for="name">Назва атрибута</label>
-    <input type="text" class="input input-bordered {% if errors.name %}input-error{% endif %}" id="name" name="name" required
+    <input type="text" class="input input-bordered" id="name" name="name" required
         value="{{ name }}"
         placeholder="e.g. name"
     >
-    {% if errors.name %}
-        <span class="text-sm text-red-500">
-            {{ errors.name }}
-        </span>
-    {% endif %}
 </div>
 <div class="form-control">
     <label for="ukr_name">Назва атрибута українською</label>
-    <input type="text" class="input input-bordered {% if errors.ukr_name %}input-error{% endif %}" id="ukr_name" name="ukr_name" required
+    <input type="text" class="input input-bordered" id="ukr_name" name="ukr_name" required
         value="{{ ukr_name }}"
         placeholder="e.g. Ім'я"
     >
-    {% if errors.ukr_name %}
-        <span class="text-sm text-red-500">
-            {{ errors.ukr_name }}
-        </span>
-    {% endif %}
 </div>
 <div class="form-control">
     <label for="data_type_id">Тип атрибута</label>
-    <select class="select select-bordered {% if errors.data_type_id %}select-error{% endif %}" id="data_type_id" name="data_type_id" required>
+    <select class="select select-bordered" id="data_type_id" name="data_type_id" required>
         {% for data_type in data_types %}
             <option value="{{ data_type.id }}" {% if data_type.id == data_type_id %}selected{% endif %}>
                 {{ data_type.name }}
             </option>
         {% endfor %}
     </select>
-    {% if errors.data_type_id %}
-        <span class="text-sm text-red-500">
-            {{ errors.data_type_id }}
-        </span>
-    {% endif %}
 </div>
 <div class="form-control">
     <label class="label cursor-pointer">

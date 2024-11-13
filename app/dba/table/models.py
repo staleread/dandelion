@@ -1,5 +1,10 @@
 from pydantic import BaseModel
 from ..table_attribute.models import Attribute, AttributeRich, DataType
+from typing import Any
+
+
+class BaseForm(BaseModel):
+    error: str | None = None
 
 
 class Table(BaseModel):
@@ -30,8 +35,8 @@ class TableCreate(BaseModel):
     is_protected: bool = False
 
 
-class TableCreateResponse(TableCreate):
-    errors: dict[str, str] = {}
+class TableCreateResponse(TableCreate, BaseForm):
+    pass
 
 
 class AttributeSecondaryCreateBase(BaseModel):
@@ -46,7 +51,19 @@ class AttributeSecondaryCreate(AttributeSecondaryCreateBase):
     table_id: int
 
 
-class AttributeSecondaryCreateResponse(AttributeSecondaryCreateBase):
+class AttributeSecondaryCreateResponse(AttributeSecondaryCreateBase, BaseForm):
     table: Table
     data_types: list[DataType] = []
-    errors: dict[str, str] = {}
+
+
+class RowCreateResponse(BaseForm):
+    table: Table
+    attributes: list[Attribute]
+    values: dict[str, Any] = {}
+
+
+class RowUpdateResponse(BaseForm):
+    table: Table
+    attributes: list[Attribute]
+    row_id: int
+    values: dict[str, Any] = {}

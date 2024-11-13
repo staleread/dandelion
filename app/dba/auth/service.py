@@ -3,7 +3,6 @@ import jwt
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import Connection
 
-from app.common.exceptions import ValidationException
 from app.config import settings
 from app.common.database.utils import SqlRunner
 
@@ -18,21 +17,17 @@ def login_user(*, connection: Connection, user_login: UserLogin) -> str:
     user = _find_user(connection=connection, username=username)
 
     if not user:
-        raise ValidationException(
-            source="username", message="Користувача з таким ім'ям не знайдено"
-        )
+        raise ValueError("Користувача з таким ім'ям не знайдено")
 
     hashed_password = _hash_password(password)
 
     if user.hashed_password != hashed_password:
-        raise ValidationException(source="password", message="Неправильний пароль")
+        raise ValueError("Неправильний пароль")
 
     permissions = _get_role_permissions(connection=connection, role_id=user.role_id)
 
     if Permissions.CAN_CONNECT not in permissions:
-        raise ValidationException(
-            source="username", message="Користувач не має доступу до бази даних"
-        )
+        raise ValueError("Користувач не має доступу до бази даних")
 
     payload = UserTokenPayload(username=user.username, permissions=permissions)
     token = _encode_user_token(payload)
@@ -50,35 +45,21 @@ def retrieve_user_info(*, token: str) -> UserInfo | None:
 
 def _validate_username(value: str | None) -> str:
     if not value:
-        raise ValidationException(
-            source="username", message="Ім'я користувача не може бути порожнім"
-        )
+        raise ValueError("Ім'я користувача не може бути порожнім")
     if len(value) < 3:
-        raise ValidationException(
-            source="username",
-            message="Ім'я користувача має містити щонайменше 3 символи",
-        )
+        raise ValueError("Ім'я користувача має містити щонайменше 3 символи")
     if len(value) > 30:
-        raise ValidationException(
-            source="username",
-            message="Ім'я користувача має містити не більше 30 символів",
-        )
+        raise ValueError("Ім'я користувача має містити не більше 30 символів")
     return value
 
 
 def _validate_password(value: str | None) -> str:
     if not value:
-        raise ValidationException(
-            source="password", message="Пароль не може бути порожнім"
-        )
+        raise ValueError("Пароль не може бути порожнім")
     if not value.isalnum():
-        raise ValidationException(
-            source="password", message="Пароль може містити лише літери та цифри"
-        )
+        raise ValueError("Пароль може містити лише літери та цифри")
     if len(value) < 3:
-        raise ValidationException(
-            source="password", message="Пароль має містити щонайменше 3 символи"
-        )
+        raise ValueError("Пароль має містити щонайменше 3 символи")
     return value
 
 

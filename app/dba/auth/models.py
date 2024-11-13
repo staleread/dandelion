@@ -16,7 +16,7 @@ class UserLogin(BaseModel):
 
 
 class UserLoginResponse(UserLogin):
-    errors: dict[str, str] = {}
+    error: str = ""
 
 
 class UserTokenPayload(BaseModel):
