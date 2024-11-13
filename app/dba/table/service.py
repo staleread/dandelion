@@ -103,7 +103,7 @@ def _validate_table_title(*, value: str) -> str:
     if not all(c.islower() or c == "_" for c in value):
         raise ValidationException(
             source="title",
-            message="Ім'я таблиці може містити лише малі літери англійського алфавіту та символ підкреслення",
+            message="Ім'я таблиці може містити лише малі літери англійського алфавіту та символ підк��еслення",
         )
 
     return value
@@ -142,3 +142,25 @@ def _insert_table_metadata(
         .bind(table_title=table_title, is_private=is_private, is_protected=is_protected)
         .map_one(lambda x: x["id"])
     )
+
+
+def delete_table(*, connection: Connection, table_id: int) -> None:
+    table = find_table_by_id(connection=connection, table_id=table_id)
+
+    if not table:
+        raise ValidationException(source="table_id", message="Таблиця не існує")
+
+    if table.is_protected:
+        raise ValidationException(
+            source="table_id", message="Захищену таблицю не можна видалити"
+        )
+
+    # Drop the actual table
+    SqlRunner(connection=connection).query(f"""
+        drop table if exists "{table.title}"
+    """).run_unsafe()
+
+    # Delete metadata
+    SqlRunner(connection=connection).query("""
+        delete from metadata.table where id = :table_id
+    """).bind(table_id=table_id).run()

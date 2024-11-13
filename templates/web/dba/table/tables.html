@@ -69,9 +69,9 @@
                     </li>
                     {% if not table.is_protected %}
                     <li>
-                        <a href="/dba/table/{{ table.id }}/delete">
-                            Видалити таблицю
-                        </a>
+                        <form action="/dba/table/{{ table.id }}/delete" method="post" class="w-full">
+                            <button type="submit">Видалити таблицю</button>
+                        </form>
                     </li>
                     {% endif %}
                 </ul>

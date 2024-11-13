@@ -24,7 +24,12 @@ from .models import (
     AttributeSecondaryCreateResponse,
     TableRowsView,
 )
-from .service import create_table, find_table_by_id, create_secondary_table_attribute
+from .service import (
+    create_table,
+    find_table_by_id,
+    create_secondary_table_attribute,
+    delete_table,
+)
 
 
 router = APIRouter(prefix="/table")
@@ -59,6 +64,18 @@ async def post_new_table_form(
             errors={e.source: e.message},
         )
         return template("dba/table/table_new.html", failure_response)
+
+
+@router.post("/{table_id}/delete", dependencies=[Depends(get_owner_user())])
+async def delete_table_handler(
+    table_id: int,
+    connection: ConnectionDep,
+):
+    try:
+        delete_table(connection=connection, table_id=table_id)
+        return RedirectResponse(url="/dba/table", status_code=302)
+    except ValidationException as e:
+        raise HTTPException(status_code=400, detail=e.message)
 
 
 @router.get("/{table_id}/attribute", dependencies=[Depends(get_guest_user())])

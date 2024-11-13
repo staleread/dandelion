@@ -10,6 +10,11 @@ from app.dba.router import router as dba_router
 app = FastAPI()
 
 
+@app.exception_handler(400)
+async def bad_request_exception_handler(request: Request, _):
+    return templates.TemplateResponse(request, name="errors/400.html")
+
+
 @app.exception_handler(401)
 async def unauthorized_exception_handler(_, __):
     return RedirectResponse(url="/dba/auth/login")
