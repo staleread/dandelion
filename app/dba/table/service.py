@@ -186,7 +186,11 @@ def _validate_row(
 
     # Check required fields
     for attr in secondary_attrs:
-        if not attr.is_nullable and attr.name not in values:
+        if (
+            not attr.is_nullable
+            and attr.name not in values
+            and attr.data_type != "serial"
+        ):
             raise ValueError(f"{attr.ukr_name}: Це поле є обов'язковим")
 
     # Check unique constraints

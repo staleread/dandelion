@@ -27,25 +27,31 @@
     </label>
     
     {% if attr.data_type in ['text', 'varchar'] %}
-        <input type="text" 
+        <input type="text"
                 name="{{ attr.name }}"
                 value="{{ values[attr.name] or '' }}"
                 {% if not attr.is_nullable %}required{% endif %}
                 class="input input-bordered w-full">
     {% elif attr.data_type in ['integer'] %}
-        <input type="number" 
+        <input type="number"
                 name="{{ attr.name }}"
                 value="{{ values[attr.name] or '' }}"
                 {% if not attr.is_nullable %}required{% endif %}
                 class="input input-bordered w-full">
     {% elif attr.data_type in ['boolean'] %}
-        <input type="checkbox" 
+        <input type="checkbox"
                 name="{{ attr.name }}"
                 {% if values[attr.name] %}checked{% endif %}
                 {% if not attr.is_nullable %}required{% endif %}
-                class="checkbox checkbox-primary">
-    {% elif attr.data_type in ['date', 'timestamp'] %}
-        <input type="datetime-local" 
+                class="toggle">
+    {% elif attr.data_type in ['date'] %}
+        <input type="date"
+                name="{{ attr.name }}"
+                value="{{ values[attr.name] or '' }}"
+                {% if not attr.is_nullable %}required{% endif %}
+                class="input input-bordered w-full">
+    {% elif attr.data_type in ['timestamp'] %}
+        <input type="datetime-local"
                 name="{{ attr.name }}"
                 value="{{ values[attr.name] or '' }}"
                 {% if not attr.is_nullable %}required{% endif %}
