@@ -1,16 +1,11 @@
-from fastapi import APIRouter, Request
-from app.core.templating import templates
+from fastapi import APIRouter
 
-router = APIRouter()
+from app.common.template.utils import TemplateContextDep
+
+
+router = APIRouter(prefix="/classic")
 
 
 @router.get("/")
-async def get_tables_page(request: Request):
-    context = {
-        "user": {
-            "username": "Nicolas",
-        }
-    }
-    return templates.TemplateResponse(
-        request=request, name="classic/home.html", context=context
-    )
+async def get_home_page(template: TemplateContextDep):
+    return template("/classic/home.html", {})

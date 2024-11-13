@@ -1,0 +1,75 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Новий атрибут{% endblock %}
+{% block form_title %}Новий атрибут{% endblock %}
+{% block form_action %}/dba/table/{{ table.id }}/attribute/new{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/dba/table">Таблиці</a></li>
+    <li><a href="/dba/table/{{ table.id }}/attribute">Атрибути таблиці '{{ table.title }}'</a></li>
+    <li>Створення нового атрибута</li>
+{% endblock %}
+
+{% block form_content %}
+<input type="hidden" name="table_id" value="{{ table.id }}">
+<div class="form-control">
+    <label for="name">Назва атрибута</label>
+    <input type="text" class="input input-bordered {% if errors.name %}input-error{% endif %}" id="name" name="name" required
+        value="{{ name }}"
+        placeholder="e.g. name"
+    >
+    {% if errors.name %}
+        <span class="text-sm text-red-500">
+            {{ errors.name }}
+        </span>
+    {% endif %}
+</div>
+<div class="form-control">
+    <label for="ukr_name">Назва атрибута українською</label>
+    <input type="text" class="input input-bordered {% if errors.ukr_name %}input-error{% endif %}" id="ukr_name" name="ukr_name" required
+        value="{{ ukr_name }}"
+        placeholder="e.g. Ім'я"
+    >
+    {% if errors.ukr_name %}
+        <span class="text-sm text-red-500">
+            {{ errors.ukr_name }}
+        </span>
+    {% endif %}
+</div>
+<div class="form-control">
+    <label for="data_type_id">Тип атрибута</label>
+    <select class="select select-bordered {% if errors.data_type_id %}select-error{% endif %}" id="data_type_id" name="data_type_id" required>
+        {% for data_type in data_types %}
+            <option value="{{ data_type.id }}" {% if data_type.id == data_type_id %}selected{% endif %}>
+                {{ data_type.name }}
+            </option>
+        {% endfor %}
+    </select>
+    {% if errors.data_type_id %}
+        <span class="text-sm text-red-500">
+            {{ errors.data_type_id }}
+        </span>
+    {% endif %}
+</div>
+<div class="form-control">
+    <label class="label cursor-pointer">
+        <span class="label-text">Унікальне значення</span>
+        <input type="checkbox" class="checkbox" name="is_unique" {% if is_unique %}checked{% endif %}>
+    </label>
+</div>
+<div class="form-control">
+    <label class="label cursor-pointer">
+        <span class="label-text">Може бути NULL</span>
+        <input type="checkbox" class="checkbox" name="is_nullable" {% if is_nullable %}checked{% endif %}>
+    </label>
+</div>
+{% endblock %}
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/db/tables/{{ table.id }}/attributes" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Створити</button>
+</div>
+{% endblock %}

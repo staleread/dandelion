@@ -1,0 +1,152 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Новий зовнішній ключ{% endblock %}
+{% block form_title %}Новий зовнішній ключ{% endblock %}
+{% block form_action %}/dba/table/{{ table.id }}/foreign_key/new{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/dba/table">Таблиці</a></li>
+    <li><a href="/dba/table/{{ table.id }}/attribute">Атрибути таблиці '{{ table.title }}'</a></li>
+    <li>Створення нового зовнішнього ключа</li>
+{% endblock %}
+
+
+{% block form_content %}
+<div class="form-control">
+    <label for="local_table_id" class="form-label">Локальна таблиця</label>
+    <input type="text" 
+           class="input input-bordered w-full" 
+           id="local_table_id" 
+           name="local_table_id"
+           value="{{ table.title }}"
+           readonly>
+</div>
+
+<div class="form-control">
+    <label for="target_table_id" class="form-label">Цільова таблиця</label>
+    <select class="select select-bordered w-full" id="target_table_id" name="target_table_id" required>
+        <option value="">Оберіть таблицю...</option>
+        {% for table in available_tables %}
+        <option value="{{ table.id }}" {% if target_table_id == table.id %}selected{% endif %}>
+            {{ table.title }}
+        </option>
+        {% endfor %}
+    </select>
+    {% if errors["target_table_id"] %}
+    <span class="text-sm text-red-500">
+        {{ errors["target_table_id"] }}
+    </span>
+    {% endif %}
+</div>
+
+<div class="form-control">
+    <label for="relationship_type" class="form-label">Тип зв'язку</label>
+    <select class="select select-bordered w-full" id="relationship_type" name="relationship_type" required>
+        <option value="many_to_one" {% if relationship_type == 'many_to_one' %}selected{% endif %}>
+            Багато до одного
+        </option>
+        <option value="one_to_one" {% if relationship_type == 'one_to_one' %}selected{% endif %}>
+            Один до одного
+        </option>
+        <option value="many_to_many" {% if relationship_type == 'many_to_many' %}selected{% endif %}>
+            Багато до багатьох
+        </option>
+    </select>
+    {% if errors["relationship_type"] %}
+    <span class="text-sm text-red-500">
+        {{ errors["relationship_type"] }}
+    </span>
+    {% endif %}
+</div>
+
+<div class="form-control" id="local_attribute_name_container">
+    <label for="local_attribute_name" class="form-label">
+        Назва поля зовнішнього ключа
+    </label>
+    <input type="text" 
+           class="input input-bordered w-full" 
+           id="local_attribute_name" 
+           name="local_attribute_name"
+           value="{{ local_attribute_name }}"
+           placeholder="Введіть назву...">
+    {% if errors["local_attribute_name"] %}
+    <span class="text-sm text-red-500">
+        {{ errors["local_attribute_name"] }}
+    </span>
+    {% endif %}
+</div>
+
+<div class="form-control">
+    <label for="on_update" class="form-label">При оновленні (ON UPDATE)</label>
+    <select class="select select-bordered w-full" id="on_update" name="on_update" required>
+        <option value="cascade" {% if on_update == 'cascade' %}selected{% endif %}>
+            CASCADE - Каскадне оновлення
+        </option>
+        <option value="restrict" {% if on_update == 'restrict' %}selected{% endif %}>
+            RESTRICT - Заборонити оновлення
+        </option>
+        <option value="no action" {% if on_update == 'no action' %}selected{% endif %}>
+            NO ACTION - Без дій
+        </option>
+    </select>
+    {% if errors["on_update"] %}
+    <span class="text-sm text-red-500">
+        {{ errors["on_update"] }}
+    </span>
+    {% endif %}
+</div>
+
+<div class="form-control">
+    <label for="on_delete" class="form-label">При видаленні (ON DELETE)</label>
+    <select class="select select-bordered w-full" id="on_delete" name="on_delete" required>
+        <option value="cascade" {% if on_delete == 'cascade' %}selected{% endif %}>
+            CASCADE - Каскадне видалення
+        </option>
+        <option value="restrict" {% if on_delete == 'restrict' %}selected{% endif %}>
+            RESTRICT - Заборонити видалення
+        </option>
+        <option value="set null" {% if on_delete == 'set null' %}selected{% endif %}>
+            SET NULL - Встановити NULL
+        </option>
+        <option value="no action" {% if on_delete == 'no action' %}selected{% endif %}>
+            NO ACTION - Без дій
+        </option>
+    </select>
+    {% if errors["on_delete"] %}
+    <span class="text-sm text-red-500">
+        {{ errors["on_delete"] }}
+    </span>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/db/tables/{{ table.id }}/attributes" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Створити</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    const relationshipType = document.getElementById('relationship_type');
+    const localAttributeDiv = document.getElementById('local_attribute_name_container');
+    const localAttributeInput = document.getElementById('local_attribute_name');
+
+    relationshipType.addEventListener('change', function(e) {
+        if (e.target.value === 'many_to_many') {
+            localAttributeDiv.style.display = 'none';
+            localAttributeInput.removeAttribute('required');
+        } else {
+            localAttributeDiv.style.display = 'block';
+            localAttributeInput.setAttribute('required', '');
+        }
+    });
+
+    relationshipType.dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

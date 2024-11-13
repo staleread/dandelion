@@ -1,6 +1,4 @@
-class NotFoundException(Exception):
-    pass
-
-
-class PasswordsDontMatchException(Exception):
-    pass
+class ValidationException(Exception):
+    def __init__(self, source: str, message: str):
+        self.source = source
+        self.message = message

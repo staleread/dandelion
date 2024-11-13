@@ -10,6 +10,9 @@
             <form action="{% block form_action %}{% endblock %}" method="post" class="card-body">
                 {{ csrf_input }}
                 {% block form_content %}{% endblock %}
+                <div class="form-control mt-4 flex flex-row justify-between gap-4">
+                    {% block form_buttons %}{% endblock %}
+                </div>
             </form>
         </div>
     </div>

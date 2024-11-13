@@ -65,7 +65,8 @@ insert into metadata.data_type (name) values
     ('date'),
     ('text'),
     ('serial'),
-    ('timestamp');
+    ('timestamp'),
+    ('boolean');
 
 insert into metadata.fk_behavior (name) values
     ('cascade'),
