@@ -1,3 +1,4 @@
+-- Metadata tables
 create schema if not exists metadata;
 
 create table metadata.data_type (
@@ -12,7 +13,7 @@ create table metadata.fk_behavior (
 
 create table metadata.table (
     id serial primary key,
-    title varchar(30) unique not null,
+    title varchar(64) unique not null,
     is_private boolean not null default false,
     is_protected boolean not null default false
 );
@@ -22,6 +23,7 @@ create table metadata.attribute (
     table_id integer not null,
     name varchar(30) not null,
     ukr_name varchar(30) not null,
+    constraint_pattern varchar null,
     data_type_id integer not null,
     is_unique boolean not null default false,
     is_nullable boolean not null default false,
@@ -54,24 +56,53 @@ create table metadata.foreign_key (
         on delete restrict
 ); 
 
--- Template used to create new tables
-create table metadata.template (
-    id serial primary key
+-- DBA tables
+create table role (
+    id serial primary key,
+    name varchar unique not null
 );
 
-insert into metadata.data_type (name) values
-    ('integer'),
-    ('varchar'),
-    ('date'),
-    ('text'),
-    ('serial'),
-    ('timestamp'),
-    ('boolean');
+create table permission (
+    id serial primary key,
+    name varchar unique not null
+);
 
-insert into metadata.fk_behavior (name) values
-    ('cascade'),
-    ('restrict'),
-    ('set null'),
-    ('set default'),
-    ('no action');
+create table role_permission (
+    role_id integer not null,
+    permission_id integer not null,
+    constraint fk_role foreign key (role_id) references role(id)
+        on update cascade
+        on delete cascade,
+    constraint fk_permission foreign key (permission_id) references permission(id)
+        on update cascade
+        on delete cascade,
+    primary key (role_id, permission_id)
+);
 
+create table "user" (
+    id serial primary key,
+    username varchar unique not null,
+    hashed_password varchar not null,
+    role_id integer not null,
+    constraint fk_role foreign key (role_id) references role(id)
+        on update cascade
+        on delete restrict
+);
+
+-- Trigger to handle cascade deletes when a table is dropped
+create or replace function metadata.handle_table_drop()
+returns event_trigger as $$
+begin
+    delete from metadata.table 
+    where not exists (
+        select 1 
+        from information_schema.tables 
+        where table_schema = 'public' 
+        and table_name = metadata.table.name
+    );
+end;
+$$ language plpgsql;
+
+create event trigger handle_table_drop_trigger
+on sql_drop
+execute procedure metadata.handle_table_drop();
