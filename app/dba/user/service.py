@@ -6,7 +6,7 @@ from sqlalchemy import Connection
 from app.config import settings
 from app.common.database.utils import SqlRunner
 
-from .models import User, UserLogin, UserTokenPayload, UserInfo
+from .models import User, UserLogin, UserTokenPayload, UserInfo, Role, UserAdd
 from .enums import Permissions
 
 
@@ -41,6 +41,73 @@ def retrieve_user_info(*, token: str) -> UserInfo | None:
         return UserInfo(username=payload.username, permissions=set(payload.permissions))
     except jwt.ExpiredSignatureError:
         return None
+
+
+def add_user(
+    *,
+    connection: Connection,
+    user_add: UserAdd,
+    current_user_permissions: set[Permissions],
+) -> None:
+    username = _validate_username(user_add.username)
+    password = _validate_password(user_add.password)
+
+    existing_user = _find_user(connection=connection, username=username)
+
+    if existing_user:
+        raise ValueError("Користувач з таким ім'ям вже існує")
+
+    sql = SqlRunner(connection=connection)
+
+    role = (
+        sql.query("""
+        select name from role where id = :role_id
+    """)
+        .bind(role_id=user_add.role)
+        .first(lambda x: x["name"])
+    )
+
+    if not role:
+        raise ValueError("Обрана роль не існує")
+
+    if role == "guest" and Permissions.CAN_ADD_USER not in current_user_permissions:
+        raise ValueError("Ви не маєте прав для створення користувачів з роллю гостя")
+
+    if (
+        role == "operator"
+        and Permissions.CAN_ADD_OPERATOR not in current_user_permissions
+    ):
+        raise ValueError(
+            "Ви не маєте прав для створення користувачів з роллю оператора"
+        )
+
+    if role == "admin" and Permissions.CAN_ADD_ADMIN not in current_user_permissions:
+        raise ValueError(
+            "Ви не маєте прав для створення користувачів з роллю адміністратора"
+        )
+
+    if role == "owner":
+        raise ValueError("Ви не маєте прав для створення користувачів з роллю власника")
+
+    hashed_password = _hash_password(password)
+
+    sql.query("""
+        insert into "user" (username, hashed_password, role_id)
+        values (:username, :password, :role_id)
+    """).bind(
+        username=username, password=hashed_password, role_id=user_add.role
+    ).execute()
+
+
+def get_available_roles(*, connection: Connection) -> list[Role]:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+            select id, name from "role"
+            order by id
+        """)
+        .many(lambda x: Role(**x))
+    )
 
 
 def _validate_username(value: str | None) -> str:

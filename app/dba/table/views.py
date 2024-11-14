@@ -5,8 +5,8 @@ from fastapi.responses import RedirectResponse
 from app.common.database.utils import QueryRunnerDep, ConnectionDep, SqlRunner
 from app.common.template.utils import TemplateModelDep
 
-from ..auth.enums import Permissions
-from ..auth.utils import (
+from ..user.enums import Permissions
+from ..user.utils import (
     get_guest_user,
     get_admin_user,
     get_owner_user,

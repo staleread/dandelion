@@ -10,6 +10,12 @@ class User(BaseModel):
     hashed_password: str
 
 
+class DisplayUser(BaseModel):
+    id: int
+    role: str
+    username: str
+
+
 class UserLogin(BaseModel):
     username: str = ""
     password: str = ""
@@ -30,3 +36,19 @@ class UserTokenPayload(BaseModel):
 class UserInfo(BaseModel):
     username: str
     permissions: set[Permissions]
+
+
+class Role(BaseModel):
+    id: int
+    name: str
+
+
+class UserAdd(BaseModel):
+    username: str = ""
+    password: str = ""
+    role: int = 0
+
+
+class UserAddResponse(UserAdd):
+    error: str = ""
+    available_roles: list[Role] = []

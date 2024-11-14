@@ -17,7 +17,7 @@ async def bad_request_exception_handler(request: Request, _):
 
 @app.exception_handler(401)
 async def unauthorized_exception_handler(_, __):
-    return RedirectResponse(url="/dba/auth/login")
+    return RedirectResponse(url="/dba/user/login")
 
 
 @app.exception_handler(403)
