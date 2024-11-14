@@ -71,7 +71,7 @@ def _find_user(*, connection: Connection, username: str) -> User | None:
         where username = :username
     """)
         .bind(username=username)
-        .first(User)
+        .first(lambda x: User(**x))
     )
 
 
@@ -85,7 +85,7 @@ def _get_role_permissions(*, connection: Connection, role_id: int) -> list[Permi
         where r.id = :role_id
     """)
         .bind(role_id=role_id)
-        .map_many(lambda x: Permissions(x["name"]))
+        .many(lambda x: Permissions(x["name"]))
     )
 
 

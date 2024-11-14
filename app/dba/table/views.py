@@ -48,7 +48,7 @@ router = APIRouter(prefix="/table")
 async def get_tables(sql: QueryRunnerDep, template: TemplateModelDep):
     tables = sql.query("""
         select * from metadata.table
-    """).all(Table)
+    """).many(lambda x: Table(**x))
 
     return template("dba/table/tables.html", TablesView(tables=tables))
 
@@ -255,7 +255,7 @@ async def get_row_update_form(
         SqlRunner(connection=connection)
         .query(f'select * from "{table.title}" where id = :row_id')
         .bind(row_id=row_id)
-        .one()
+        .first_row()
     )
 
     if not row:

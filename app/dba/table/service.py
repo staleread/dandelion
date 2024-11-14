@@ -1,8 +1,10 @@
 from typing import Any
 from sqlalchemy.engine import Connection
+from datetime import datetime, date
 
 from app.common.database.utils import SqlRunner
 
+from ..table_attribute.models import Attribute
 from ..table_attribute.enums import DataTypes
 from ..table_attribute.service import (
     insert_table_attribute,
@@ -20,7 +22,7 @@ def find_table_by_id(*, connection: Connection, table_id: int) -> Table | None:
             where id = :table_id
         """)
         .bind(table_id=table_id)
-        .first(Table)
+        .first(lambda x: Table(**x))
     )
 
 
@@ -93,11 +95,11 @@ def delete_table(*, connection: Connection, table_id: int) -> None:
 
     sql.query(f"""
         drop table if exists "{table.title}"
-    """).run_unsafe()
+    """).execute_unsafe()
 
     sql.query("""
         delete from metadata.table where id = :table_id
-    """).bind(table_id=table_id).run()
+    """).bind(table_id=table_id).execute()
 
 
 def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) -> None:
@@ -106,9 +108,17 @@ def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) ->
     if not table:
         raise ValueError("Таблиця не існує")
 
+    attributes = get_table_attributes(connection=connection, table_id=table.id)
+
     _validate_row(
-        connection=connection, table=table, values=values, exclude_current=False
+        connection=connection,
+        table=table,
+        attributes=attributes,
+        values=values,
+        exclude_current=False,
     )
+
+    _convert_values_to_db_format(values=values, attributes=attributes)
 
     sql = SqlRunner(connection=connection)
 
@@ -118,7 +128,7 @@ def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) ->
     sql.query(f"""
         insert into "{table.title}" ({columns})
         values ({placeholders})
-    """).bind(**values).run()
+    """).bind(**values).execute()
 
 
 def update_row(
@@ -129,8 +139,14 @@ def update_row(
     if not table:
         raise ValueError("Таблиця не існує")
 
+    attributes = get_table_attributes(connection=connection, table_id=table.id)
+
     _validate_row(
-        connection=connection, table=table, values=values, exclude_current=True
+        connection=connection,
+        table=table,
+        attributes=attributes,
+        values=values,
+        exclude_current=True,
     )
 
     sql = SqlRunner(connection=connection)
@@ -140,17 +156,17 @@ def update_row(
     sql.query(f"""
         update "{table.title}" set {placeholders}
         where id = :row_id
-    """).bind(**values, row_id=row_id).run()
+    """).bind(**values, row_id=row_id).execute()
 
 
 def _validate_row(
     *,
     connection: Connection,
     table: Table,
+    attributes: list[Attribute],
     values: dict[str, Any],
     exclude_current: bool = False,
 ) -> None:
-    attributes = get_table_attributes(connection=connection, table_id=table.id)
     sql = SqlRunner(connection=connection)
 
     primary_attrs = [a for a in attributes if a.is_primary]
@@ -178,7 +194,7 @@ def _validate_row(
             )
         """)
             .bind(**values)
-            .map_one(lambda x: x["exists"])
+            .scalar()
         )
 
         if is_duplicate:
@@ -212,11 +228,47 @@ def _validate_row(
             )
         """)
             .bind(**bind_params)
-            .map_one(lambda x: x["exists"])
+            .scalar()
         )
 
         if is_duplicate:
             raise ValueError(f"{attr.ukr_name}: Це значення повинно бути унікальним")
+
+    # Check foreign key constraints
+    for attr in secondary_attrs:
+        if attr.name not in values or values[attr.name] is None:
+            continue
+
+        fk_relation = (
+            sql.query("""
+                select 
+                    ft.title as foreign_table,
+                    fa.name as foreign_column
+                from metadata.foreign_key fk
+                join metadata.attribute ta on ta.id = fk.attribute_id
+                join metadata.attribute fa on fa.id = fk.referenced_attribute_id
+                join metadata.table ft on ft.id = fa.table_id
+                where ta.table_id = :table_id and ta.name = :attr_name
+            """)
+            .bind(table_id=table.id, attr_name=attr.name)
+            .first_row()
+        )
+
+        if fk_relation:
+            exists = (
+                sql.query(f"""
+                    select exists (
+                        select 1 from "{fk_relation['foreign_table']}"
+                        where id = :value
+                    )
+                """)
+                .bind(value=values[attr.name])
+                .scalar()
+            )
+            if not exists:
+                raise ValueError(
+                    f"{attr.ukr_name}: Вказане значення не існує у цільовій таблиці"
+                )
 
 
 def _validate_table_title(*, value: str) -> str:
@@ -252,14 +304,14 @@ def _table_exists(*, table_title: str, connection: Connection) -> bool:
             )
         """)
         .bind(table_title=table_title)
-        .map_one(lambda x: x["exists"])
+        .scalar()
     )
 
 
 def _create_empty_table(*, table_title: str, connection: Connection) -> None:
     SqlRunner(connection=connection).query(f"""
         create table "{table_title}" ()
-    """).run_unsafe()
+    """).execute_unsafe()
 
 
 def _insert_table_metadata(
@@ -273,5 +325,36 @@ def _insert_table_metadata(
         returning id
     """)
         .bind(table_title=table_title, is_private=is_private, is_protected=is_protected)
-        .map_one(lambda x: x["id"])
+        .scalar()
     )
+
+
+def _convert_values_to_db_format(
+    *, values: dict[str, Any], attributes: list[Attribute]
+) -> None:
+    attr_map = {attr.name: attr for attr in attributes}
+
+    for key, value in values.items():
+        if value is None:
+            continue
+
+        attr = attr_map.get(key)
+        if not attr:
+            continue
+
+        if isinstance(value, str):
+            # Handle timestamp conversion
+            if attr.data_type == DataTypes.TIMESTAMP.value:
+                try:
+                    values[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except ValueError:
+                    raise ValueError(
+                        f"{attr.ukr_name}: Неправильний формат дати та часу"
+                    )
+
+            # Handle date conversion
+            elif attr.data_type == DataTypes.DATE.value:
+                try:
+                    values[key] = date.fromisoformat(value)
+                except ValueError:
+                    raise ValueError(f"{attr.ukr_name}: Неправильний формат дати")

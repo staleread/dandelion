@@ -10,7 +10,7 @@ def get_all_data_types(*, connection: Connection) -> list[DataType]:
     return (
         SqlRunner(connection=connection)
         .query("""select * from metadata.data_type""")
-        .all(DataType)
+        .many(lambda x: DataType(**x))
     )
 
 
@@ -21,7 +21,7 @@ def get_data_type_by_name(
         SqlRunner(connection=connection)
         .query("""select * from metadata.data_type where name = :data_type""")
         .bind(data_type=data_type.value)
-        .first(DataType)
+        .first(lambda x: DataType(**x))
     )
 
 
@@ -45,7 +45,7 @@ def get_table_attributes(*, connection: Connection, table_id: int) -> list[Attri
         where a.table_id = :table_id
     """)
         .bind(table_id=table_id)
-        .all(Attribute)
+        .many(lambda x: Attribute(**x))
     )
 
 
@@ -74,7 +74,7 @@ def get_table_rich_attributes(
         where a.table_id = :table_id
     """)
         .bind(table_id=table_id)
-        .all(AttributeRich)
+        .many(lambda x: AttributeRich(**x))
     )
 
 
@@ -110,7 +110,7 @@ def insert_table_attribute(
     SqlRunner(connection=connection).query(f"""
         alter table "{table_title}" 
         add column "{name}" {data_type.name} {nullable_str} {primary_str} {unique_str} 
-    """).run_unsafe()
+    """).execute_unsafe()
 
     return _insert_table_attribute_metadata(
         connection=connection,
@@ -151,7 +151,7 @@ def _attribute_exists(*, connection: Connection, table_id: int, name: str) -> bo
             select exists (select 1 from metadata.attribute where table_id = :table_id and name = :name)
         """)
         .bind(table_id=table_id, name=name)
-        .map_one(lambda x: x["exists"])
+        .scalar()
     )
 
 
@@ -164,7 +164,7 @@ def _find_data_type_by_id(
             select * from metadata.data_type where id = :data_type_id
         """)
         .bind(data_type_id=data_type_id)
-        .first(DataType)
+        .first(lambda x: DataType(**x))
     )
 
 
@@ -211,5 +211,5 @@ def _insert_table_attribute_metadata(
             is_unique=is_unique,
             is_nullable=is_nullable,
         )
-        .map_one(lambda x: x["id"])
+        .scalar()
     )

@@ -2,8 +2,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
-from sqlalchemy.engine.row import RowMapping
-from typing import TypeVar, Callable, Any, Type
+from typing import TypeVar, Callable, Any
 
 from .core import engine
 
@@ -24,71 +23,42 @@ class SqlQueryRunner:
         self.kwargs = kwargs
         return self
 
-    def first(self, type: Type[T]) -> T | None:
-        if not self.sql:
-            raise ValueError("sql is not set")
-
+    def first(self, map_row: Callable[[dict], T]) -> T | None:
         row = self.connection.execute(text(self.sql), self.kwargs).first()
-        return type(**dict(row._mapping)) if row else None
-
-    def one(self) -> dict:
-        if not self.sql:
-            raise ValueError("sql is not set")
-
-        row = self.connection.execute(text(self.sql), self.kwargs).one()
 
         if not row:
-            raise ValueError("no row found")
+            return None
+        return map_row(dict(row._mapping))
 
-        return dict(row._mapping)
+    def first_row(self) -> dict | None:
+        return self.first(lambda x: x)
 
-    def map_one(self, map_row: Callable[[RowMapping], T]) -> T:
-        if not self.sql:
-            raise ValueError("sql is not set")
-
+    def one(self, map_row: Callable[[dict], T]) -> T:
         row = self.connection.execute(text(self.sql), self.kwargs).one()
+        return map_row(dict(row._mapping))
 
-        if not row:
-            raise ValueError("no row found")
+    def one_row(self) -> dict | None:
+        return self.one(lambda x: x)
 
-        return map_row(row._mapping)
-
-    def all(self, type: Type[T]) -> list[T]:
-        if not self.sql:
-            raise ValueError("sql is not set")
-
+    def many(self, map_row: Callable[[dict], T]) -> list[T]:
         rows = self.connection.execute(text(self.sql), self.kwargs).all()
-        return list(map(lambda x: type(**dict(x._mapping)), rows))
+        return list(map(lambda x: map_row(dict(x._mapping)), rows))
 
-    def many(self) -> list[dict]:
-        if not self.sql:
-            raise ValueError("sql is not set")
+    def many_rows(self) -> list[dict]:
+        return self.many(lambda x: x)
 
-        rows = self.connection.execute(text(self.sql), self.kwargs).all()
-        return list(map(lambda x: dict(x._mapping), rows))
-
-    def map_many(self, map_row: Callable[[RowMapping], T]) -> list[T]:
-        if not self.sql:
-            raise ValueError("sql is not set")
-
-        rows = self.connection.execute(text(self.sql), self.kwargs).all()
-        return list(map(lambda x: map_row(x._mapping), rows))
+    def scalar(self) -> Any:
+        return self.connection.execute(text(self.sql), self.kwargs).scalar()
 
 
 class SqlRunner(SqlQueryRunner):
     def __init__(self, *, connection: Connection):
         super().__init__(connection=connection)
 
-    def run(self):
-        if not self.sql:
-            raise ValueError("sql is not set")
-
+    def execute(self):
         self.connection.execute(text(self.sql), self.kwargs)
 
-    def run_unsafe(self):
-        if not self.sql:
-            raise ValueError("sql is not set")
-
+    def execute_unsafe(self):
         self.connection.exec_driver_sql(self.sql, self.kwargs)
 
 
