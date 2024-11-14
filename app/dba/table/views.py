@@ -13,11 +13,11 @@ from ..auth.utils import (
     get_operator_user,
     GuestDep,
 )
-from ..table_row.service import get_table_rows
 from ..table_attribute.service import (
-    get_table_attributes,
-    get_table_rich_attributes,
+    get_display_attributes,
+    get_rich_display_attributes,
     get_all_data_types,
+    find_attribute_by_id,
 )
 from .models import (
     Table,
@@ -30,14 +30,18 @@ from .models import (
     TableRowsView,
     RowCreateResponse,
     RowUpdateResponse,
+    AttributeSecondaryEdit,
+    AttributeSecondaryEditResponse,
 )
 from .service import (
     create_table,
     find_table_by_id,
     create_secondary_table_attribute,
     delete_table,
+    get_formatted_table_rows,
     add_row,
     update_row,
+    edit_secondary_table_attribute,
 )
 
 
@@ -96,7 +100,7 @@ async def get_table_attributes_view(
     if not table:
         raise HTTPException(status_code=404)
 
-    rich_attributes = get_table_rich_attributes(
+    rich_attributes = get_rich_display_attributes(
         connection=connection, table_id=table_id
     )
 
@@ -169,9 +173,11 @@ async def get_table_rows_view(
     if table.is_private and Permissions.CAN_READ_PRIVATE not in user.permissions:
         raise HTTPException(status_code=403)
 
-    attributes = get_table_attributes(connection=connection, table_id=table_id)
+    attributes = get_display_attributes(connection=connection, table_id=table_id)
 
-    rows = get_table_rows(connection=connection, table_title=table.title)
+    rows = get_formatted_table_rows(
+        connection=connection, table_title=table.title, attributes=attributes
+    )
 
     return template(
         "dba/table/table_rows.html",
@@ -191,7 +197,7 @@ async def get_row_create_form(
 
     attributes = [
         attr
-        for attr in get_table_attributes(connection=connection, table_id=table_id)
+        for attr in get_display_attributes(connection=connection, table_id=table_id)
         if attr.data_type != "serial"
     ]
 
@@ -225,7 +231,7 @@ async def post_row_create_form(
     except ValueError as e:
         attributes = [
             attr
-            for attr in get_table_attributes(connection=connection, table_id=table_id)
+            for attr in get_display_attributes(connection=connection, table_id=table_id)
             if attr.data_type != "serial"
         ]
 
@@ -263,7 +269,7 @@ async def get_row_update_form(
 
     attributes = [
         attr
-        for attr in get_table_attributes(connection=connection, table_id=table_id)
+        for attr in get_display_attributes(connection=connection, table_id=table_id)
         if attr.data_type != "serial"
     ]
 
@@ -291,7 +297,7 @@ async def post_row_update_form(
 
     attributes = [
         attr
-        for attr in get_table_attributes(connection=connection, table_id=table_id)
+        for attr in get_display_attributes(connection=connection, table_id=table_id)
         if attr.data_type != "serial"
     ]
 
@@ -311,6 +317,85 @@ async def post_row_update_form(
                 attributes=attributes,
                 row_id=row_id,
                 values=row_data,
+                error=str(e),
+            ),
+        )
+
+
+@router.get(
+    "/{table_id}/attribute/{attribute_id}/edit",
+    dependencies=[Depends(get_admin_user())],
+)
+async def get_attribute_edit_form(
+    table_id: int,
+    attribute_id: int,
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise HTTPException(status_code=404)
+
+    attribute = find_attribute_by_id(
+        connection=connection, table_id=table_id, attribute_id=attribute_id
+    )
+
+    if not attribute:
+        raise HTTPException(status_code=404)
+
+    if attribute.is_primary:
+        raise HTTPException(
+            status_code=403, detail="Не можна редагувати первинний ключ"
+        )
+
+    return template(
+        "dba/table/table_attribute_edit.html",
+        AttributeSecondaryEditResponse(
+            table=table,
+            attribute=attribute,
+            name=attribute.name,
+            ukr_name=attribute.ukr_name,
+        ),
+    )
+
+
+@router.post(
+    "/{table_id}/attribute/{attribute_id}/edit",
+    dependencies=[Depends(get_admin_user())],
+)
+async def post_attribute_edit_form(
+    table_id: int,
+    attribute_id: int,
+    attribute_edit: Annotated[AttributeSecondaryEdit, Form()],
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    try:
+        edit_secondary_table_attribute(
+            connection=connection,
+            table_id=table_id,
+            attribute_id=attribute_id,
+            name=attribute_edit.name,
+            ukr_name=attribute_edit.ukr_name,
+        )
+        return RedirectResponse(url=f"/dba/table/{table_id}/attribute", status_code=302)
+    except ValueError as e:
+        table = find_table_by_id(connection=connection, table_id=table_id)
+
+        attribute = find_attribute_by_id(
+            connection=connection, table_id=table_id, attribute_id=attribute_id
+        )
+
+        if not table or not attribute:
+            raise HTTPException(status_code=404)
+
+        return template(
+            "dba/table/table_attribute_edit.html",
+            AttributeSecondaryEditResponse(
+                table=table,
+                attribute=attribute,
+                name=attribute_edit.name,
+                ukr_name=attribute_edit.ukr_name,
                 error=str(e),
             ),
         )

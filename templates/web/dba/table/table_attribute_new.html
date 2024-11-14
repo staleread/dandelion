@@ -56,6 +56,16 @@
         <input type="checkbox" class="checkbox" name="is_nullable" {% if is_nullable %}checked{% endif %}>
     </label>
 </div>
+<div class="form-control">
+    <label for="constraint_pattern">Обмеження значень (опціонально)</label>
+    <input type="text" class="input input-bordered" id="constraint_pattern" name="constraint_pattern"
+        value="{{ constraint_pattern if constraint_pattern else '' }}"
+        placeholder="e.g. between 1 and 7 or in (1, 2)"
+    >
+    <label class="label">
+        <span class="label-text-alt">Підтримуються шаблони "between X and Y" та "in (X, Y, ...)" для цілих чисел</span>
+    </label>
+</div>
 {% endblock %}
 
 {% block form_buttons %}

@@ -8,4 +8,5 @@ class DataTypes(StrEnum):
     TEXT = "text"
     SERIAL = "serial"
     TIMESTAMP = "timestamp"
+    TIME = "time"
     BOOLEAN = "boolean"

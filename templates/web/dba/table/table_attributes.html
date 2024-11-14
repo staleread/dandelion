@@ -29,6 +29,7 @@
     <th>ID</th>
     <th>Унікальний</th>
     <th>Обов'язковий</th>
+    <th>Обмеження</th>
     <th>Послання</th>
     {% if not table.is_protected %}
         <th class="text-right">Дії</th>
@@ -74,8 +75,13 @@
                 {% endif %}
             </td>
             <td>
+                {% if attribute.constraint_pattern %}
+                    <kbd class="kbd kbd-sm">{{ attribute.constraint_pattern }}</kbd>
+                {% endif %}
+            </td>
+            <td>
                 {% if attribute.foreign_table_id %}
-                    <a href="/db/tables/{{ attribute.foreign_table_id }}/attributes" class="link">
+                    <a href="/dba/table/{{ attribute.foreign_table_id }}/attribute" class="link">
                         {{ attribute.foreign_table_name }}
                     </a>
                 {% endif %}
@@ -92,12 +98,12 @@
 
                     <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
                       <li>
-                        <a href="/db/tables/{{ table.id }}/attributes/{{ attribute.id }}/edit">
+                        <a href="/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/edit">
                             Редагувати
                         </a>
                       </li>
                       <li>
-                        <a href="/db/tables/{{ table.id }}/attributes/{{ attribute.id }}/delete">
+                        <a href="/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/delete">
                             Видалити
                         </a>
                       </li>

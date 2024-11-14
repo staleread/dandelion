@@ -1,5 +1,10 @@
 from pydantic import BaseModel
-from ..table_attribute.models import Attribute, AttributeRich, DataType
+from ..table_attribute.models import (
+    Attribute,
+    DataType,
+    DisplayAttribute,
+    DisplayAttributeRich,
+)
 from typing import Any
 
 
@@ -20,12 +25,12 @@ class TablesView(BaseModel):
 
 class TableAttributesView(BaseModel):
     table: Table
-    rich_attributes: list[AttributeRich]
+    rich_attributes: list[DisplayAttributeRich]
 
 
 class TableRowsView(BaseModel):
     table: Table
-    attributes: list[Attribute]
+    attributes: list[DisplayAttribute]
     rows: list[dict]
 
 
@@ -45,6 +50,7 @@ class AttributeSecondaryCreateBase(BaseModel):
     data_type_id: int = 1
     is_unique: bool = False
     is_nullable: bool = False
+    constraint_pattern: str | None = None
 
 
 class AttributeSecondaryCreate(AttributeSecondaryCreateBase):
@@ -58,12 +64,24 @@ class AttributeSecondaryCreateResponse(AttributeSecondaryCreateBase, BaseForm):
 
 class RowCreateResponse(BaseForm):
     table: Table
-    attributes: list[Attribute]
+    attributes: list[DisplayAttribute]
     values: dict[str, Any] = {}
 
 
 class RowUpdateResponse(BaseForm):
     table: Table
-    attributes: list[Attribute]
+    attributes: list[DisplayAttribute]
     row_id: int
     values: dict[str, Any] = {}
+
+
+class AttributeSecondaryEdit(BaseModel):
+    name: str
+    ukr_name: str
+
+
+class AttributeSecondaryEditResponse(BaseForm):
+    table: Table
+    attribute: Attribute
+    name: str = ""
+    ukr_name: str = ""

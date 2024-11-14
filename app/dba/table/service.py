@@ -1,16 +1,19 @@
 from typing import Any
 from sqlalchemy.engine import Connection
 from datetime import datetime, date
+import re
 
 from app.common.database.utils import SqlRunner
 
-from ..table_attribute.models import Attribute
+from ..table_attribute.models import Attribute, DisplayAttribute
 from ..table_attribute.enums import DataTypes
 from ..table_attribute.service import (
     insert_table_attribute,
     get_data_type_by_name,
-    get_table_attributes,
+    get_display_attributes,
+    update_secondary_attribute,
 )
+from ..table_row.service import get_table_rows
 from .models import TableCreate, Table, AttributeSecondaryCreate
 
 
@@ -69,6 +72,20 @@ def create_secondary_table_attribute(
     if not table:
         raise ValueError("Таблиця не існує")
 
+    data_type = get_data_type_by_name(
+        connection=connection, data_type=DataTypes.INTEGER
+    )
+
+    if not data_type:
+        raise ValueError("Не вдалося знайти тип даних для нової колонки")
+
+    try:
+        constraint = _parse_constraint_pattern(
+            data_type=data_type.name, pattern=attribute_create.constraint_pattern
+        )
+    except ValueError as e:
+        raise ValueError(f"Помилка в обмеженні: {str(e)}")
+
     insert_table_attribute(
         connection=connection,
         table_id=attribute_create.table_id,
@@ -79,6 +96,46 @@ def create_secondary_table_attribute(
         is_unique=attribute_create.is_unique,
         is_nullable=attribute_create.is_nullable,
         is_primary=IS_PRIMARY,
+        constraint_pattern=constraint,
+    )
+
+
+def edit_secondary_table_attribute(
+    *,
+    connection: Connection,
+    table_id: int,
+    attribute_id: int,
+    name: str,
+    ukr_name: str,
+) -> None:
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise ValueError("Таблиця не існує")
+
+    attribute = (
+        SqlRunner(connection=connection)
+        .query("""
+            select * from metadata.attribute
+            where id = :attribute_id and table_id = :table_id
+        """)
+        .bind(attribute_id=attribute_id, table_id=table_id)
+        .first(lambda x: Attribute(**x))
+    )
+
+    if not attribute:
+        raise ValueError("Атрибут не існує")
+
+    if attribute.is_primary:
+        raise ValueError("Не можна редагувати первинний ключ")
+
+    update_secondary_attribute(
+        connection=connection,
+        table_title=table.title,
+        table_id=table_id,
+        attribute_id=attribute_id,
+        old_name=attribute.name,
+        new_name=name,
+        new_ukr_name=ukr_name,
     )
 
 
@@ -102,13 +159,51 @@ def delete_table(*, connection: Connection, table_id: int) -> None:
     """).bind(table_id=table_id).execute()
 
 
+def get_formatted_table_rows(
+    *, connection: Connection, table_title: str, attributes: list[DisplayAttribute]
+) -> list[dict]:
+    rows = get_table_rows(connection=connection, table_title=table_title)
+    attr_map = {attr.name: attr for attr in attributes}
+
+    formatted_rows = []
+    for row in rows:
+        formatted_row = {}
+        for key, value in row.items():
+            attr = attr_map.get(key)
+
+            # Handle NULL values
+            if value is None:
+                formatted_row[key] = "NULL"
+                continue
+
+            # Format based on data type if attribute exists
+            if attr:
+                if attr.data_type == DataTypes.TIMESTAMP.value:
+                    # Format timestamp as ISO string
+                    formatted_row[key] = value.isoformat()
+                elif attr.data_type == DataTypes.TIME.value:
+                    # Format time as HH:MM:SS
+                    formatted_row[key] = value.strftime("%H:%M:%S")
+                elif attr.data_type == DataTypes.DATE.value:
+                    formatted_row[key] = value.strftime("%Y-%m-%d")
+                else:
+                    formatted_row[key] = str(value)
+            else:
+                # For unknown columns, just convert to string
+                formatted_row[key] = str(value)
+
+        formatted_rows.append(formatted_row)
+
+    return formatted_rows
+
+
 def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) -> None:
     table = find_table_by_id(connection=connection, table_id=table_id)
 
     if not table:
         raise ValueError("Таблиця не існує")
 
-    attributes = get_table_attributes(connection=connection, table_id=table.id)
+    attributes = get_display_attributes(connection=connection, table_id=table.id)
 
     _validate_row(
         connection=connection,
@@ -139,7 +234,7 @@ def update_row(
     if not table:
         raise ValueError("Таблиця не існує")
 
-    attributes = get_table_attributes(connection=connection, table_id=table.id)
+    attributes = get_display_attributes(connection=connection, table_id=table.id)
 
     _validate_row(
         connection=connection,
@@ -163,7 +258,7 @@ def _validate_row(
     *,
     connection: Connection,
     table: Table,
-    attributes: list[Attribute],
+    attributes: list[DisplayAttribute],
     values: dict[str, Any],
     exclude_current: bool = False,
 ) -> None:
@@ -270,6 +365,38 @@ def _validate_row(
                     f"{attr.ukr_name}: Вказане значення не існує у цільовій таблиці"
                 )
 
+    # Add constraint validation
+    for attr in attributes:
+        if attr.name not in values or values[attr.name] is None:
+            continue
+
+        if attr.data_type == DataTypes.INTEGER.value and attr.constraint_pattern:
+            value = values[attr.name]
+            try:
+                value = int(value)
+            except ValueError:
+                raise ValueError(f"{attr.ukr_name}: Значення має бути цілим числом")
+
+            if attr.constraint_pattern.startswith("between"):
+                match = re.match(
+                    r"between\s+(-?\d+)\s+and\s+(-?\d+)", attr.constraint_pattern
+                )
+                if match:
+                    min_val, max_val = map(int, match.groups())
+                    if not (min_val <= value <= max_val):
+                        raise ValueError(
+                            f"{attr.ukr_name}: Значення має бути між {min_val} та {max_val}"
+                        )
+
+            elif attr.constraint_pattern.startswith("in"):
+                match = re.match(r"in\s*\(([\d\s,+-]+)\)", attr.constraint_pattern)
+                if match:
+                    allowed_values = [int(x.strip()) for x in match.group(1).split(",")]
+                    if value not in allowed_values:
+                        raise ValueError(
+                            f"{attr.ukr_name}: Значення має бути одним з: {', '.join(map(str, allowed_values))}"
+                        )
+
 
 def _validate_table_title(*, value: str) -> str:
     if not value:
@@ -330,7 +457,7 @@ def _insert_table_metadata(
 
 
 def _convert_values_to_db_format(
-    *, values: dict[str, Any], attributes: list[Attribute]
+    *, values: dict[str, Any], attributes: list[DisplayAttribute]
 ) -> None:
     attr_map = {attr.name: attr for attr in attributes}
 
@@ -358,3 +485,35 @@ def _convert_values_to_db_format(
                     values[key] = date.fromisoformat(value)
                 except ValueError:
                     raise ValueError(f"{attr.ukr_name}: Неправильний формат дати")
+
+
+def _parse_constraint_pattern(data_type: str, pattern: str | None) -> str | None:
+    if not pattern or not pattern.strip() or data_type != DataTypes.INTEGER.value:
+        return None
+
+    pattern = pattern.strip().lower()
+
+    # Parse "between X and Y"
+    between_match = re.match(r"^between\s+(-?\d+)\s+and\s+(-?\d+)$", pattern)
+    if between_match:
+        start, end = map(int, between_match.groups())
+        if start >= end:
+            raise ValueError("В обмеженні 'between' перше число має бути менше другого")
+        return f"between {start} and {end}"
+
+    # Parse "in (X, Y, ...)"
+    in_match = re.match(r"^in\s*\(([\d\s,+-]+)\)$", pattern)
+    if in_match:
+        try:
+            values = [int(x.strip()) for x in in_match.group(1).split(",")]
+            if not values:
+                raise ValueError()
+            return f"in ({', '.join(map(str, values))})"
+        except ValueError:
+            raise ValueError(
+                "Обмеження 'in' має містити список цілих чисел, розділених комами"
+            )
+
+    raise ValueError(
+        "Підтримуються лише обмеження типу 'between X and Y' та 'in (X, Y, ...)'"
+    )
