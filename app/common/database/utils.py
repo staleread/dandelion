@@ -19,7 +19,7 @@ class SqlQueryRunner:
         self.sql = sql
         return self
 
-    def bind(self, **kwargs: str | int | float | bool):
+    def bind(self, **kwargs: str | int | float | bool | None):
         self.kwargs = kwargs
         return self
 
