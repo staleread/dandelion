@@ -12,6 +12,8 @@ from ..table_attribute.service import (
     get_data_type_by_name,
     get_display_attributes,
     update_secondary_attribute,
+    find_attribute_by_id,
+    delete_attribute,
 )
 from ..table_row.service import get_table_rows
 from .models import TableCreate, Table, AttributeSecondaryCreate
@@ -254,6 +256,33 @@ def update_row(
     """).bind(**values, row_id=row_id).execute()
 
 
+def delete_table_attribute(
+    *, connection: Connection, table_id: int, attribute_id: int
+) -> None:
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise ValueError("Таблиця не існує")
+
+    attribute = find_attribute_by_id(
+        connection=connection,
+        table_id=table_id,
+        attribute_id=attribute_id,
+    )
+
+    if not attribute:
+        raise ValueError("Атрибут не існує")
+
+    if attribute.is_primary:
+        raise ValueError("Не можна видалити первинний ключ")
+
+    delete_attribute(
+        connection=connection,
+        table_title=table.title,
+        attribute_id=attribute_id,
+        attribute_name=attribute.name,
+    )
+
+
 def _validate_row(
     *,
     connection: Connection,
@@ -476,7 +505,7 @@ def _convert_values_to_db_format(
                     values[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
                 except ValueError:
                     raise ValueError(
-                        f"{attr.ukr_name}: Неправильний формат дати та часу"
+                        f"{attr.ukr_name}: Неправильний фо��мат дати та часу"
                     )
 
             # Handle date conversion

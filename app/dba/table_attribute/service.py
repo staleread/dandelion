@@ -83,6 +83,20 @@ def get_rich_display_attributes(
     )
 
 
+def find_attribute_by_id(
+    *, connection: Connection, table_id: int, attribute_id: int
+) -> Attribute | None:
+    return (
+        SqlRunner(connection=connection)
+        .query("""
+            select * from metadata.attribute
+            where id = :attribute_id and table_id = :table_id
+        """)
+        .bind(attribute_id=attribute_id, table_id=table_id)
+        .first(lambda x: Attribute(**x))
+    )
+
+
 def insert_table_attribute(
     *,
     connection: Connection,
@@ -194,18 +208,20 @@ def update_secondary_attribute(
     ).execute()
 
 
-def find_attribute_by_id(
-    *, connection: Connection, table_id: int, attribute_id: int
-) -> Attribute | None:
-    return (
-        SqlRunner(connection=connection)
-        .query("""
-            select * from metadata.attribute
-            where id = :attribute_id and table_id = :table_id
-        """)
-        .bind(attribute_id=attribute_id, table_id=table_id)
-        .first(lambda x: Attribute(**x))
-    )
+def delete_attribute(
+    *, connection: Connection, table_title: str, attribute_id: int, attribute_name: str
+) -> None:
+    sql = SqlRunner(connection=connection)
+
+    sql.query(f"""
+        alter table "{table_title}" 
+        drop column "{attribute_name}"
+    """).execute_unsafe()
+
+    sql.query("""
+        delete from metadata.attribute 
+        where id = :attribute_id
+    """).bind(attribute_id=attribute_id).execute()
 
 
 def _validate_attribute_name(value: str) -> str:

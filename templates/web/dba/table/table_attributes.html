@@ -97,17 +97,17 @@
                     </button>
 
                     <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                      <li>
-                        <a href="/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/edit">
-                            Редагувати
-                        </a>
-                      </li>
-                      <li>
-                        <a href="/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/delete">
-                            Видалити
-                        </a>
-                      </li>
-                    </ul>
+                        <li>
+                            <a href="/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/edit">
+                                Редагувати
+                            </a>
+                        </li>
+                        <li>
+                            <form action="/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/delete" method="post" class="w-full">
+                                <button type="submit">Видалити</button>
+                            </form>
+                        </li>
+                        </ul>
                 </div>
                 {% endif %}
             </td>

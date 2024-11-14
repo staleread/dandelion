@@ -42,6 +42,7 @@ from .service import (
     add_row,
     update_row,
     edit_secondary_table_attribute,
+    delete_table_attribute,
 )
 
 
@@ -399,3 +400,23 @@ async def post_attribute_edit_form(
                 error=str(e),
             ),
         )
+
+
+@router.post(
+    "/{table_id}/attribute/{attribute_id}/delete",
+    dependencies=[Depends(get_admin_user())],
+)
+async def delete_attribute_handler(
+    table_id: int,
+    attribute_id: int,
+    connection: ConnectionDep,
+):
+    try:
+        delete_table_attribute(
+            connection=connection,
+            table_id=table_id,
+            attribute_id=attribute_id,
+        )
+        return RedirectResponse(url=f"/dba/table/{table_id}/attribute", status_code=302)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
