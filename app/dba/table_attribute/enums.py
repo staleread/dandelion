@@ -10,3 +10,4 @@ class DataTypes(StrEnum):
     TIMESTAMP = "timestamp"
     TIME = "time"
     BOOLEAN = "boolean"
+    JSON = "json"

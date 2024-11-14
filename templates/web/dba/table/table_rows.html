@@ -45,7 +45,13 @@
     {% for row in rows %}
     <tr class="hover">
         {% for attribute in attributes %}
-            <td>{{ row[attribute.name] }}</td>
+            <td>
+                {% if attribute.data_type == 'json' %}
+                    <kbd class="kbd kbd-sm whitespace-pre-wrap break-all p-2">{{ row[attribute.name] }}</kbd>
+                {% else %}
+                    {{ row[attribute.name] }}
+                {% endif %}
+            </td>
         {% endfor %}
         <td class="text-right">
             <div class="dropdown dropdown-left">

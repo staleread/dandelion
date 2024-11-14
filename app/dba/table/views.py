@@ -104,6 +104,7 @@ async def get_table_attributes_view(
     rich_attributes = get_rich_display_attributes(
         connection=connection, table_id=table_id
     )
+    print(rich_attributes)
 
     return template(
         "dba/table/table_attributes.html",

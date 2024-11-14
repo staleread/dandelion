@@ -56,6 +56,10 @@
                 value="{{ values[attr.name] or '' }}"
                 {% if not attr.is_nullable %}required{% endif %}
                 class="input input-bordered w-full">
+    {% elif attr.data_type in ['json'] %}
+        <textarea name="{{ attr.name }}"
+                  {% if not attr.is_nullable %}required{% endif %}
+                  class="textarea textarea-bordered w-full h-32 font-mono">{{ values[attr.name] or '' }}</textarea>
     {% endif %}
 </div>
 {% endfor %}

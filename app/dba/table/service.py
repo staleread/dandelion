@@ -2,6 +2,7 @@ from typing import Any
 from sqlalchemy.engine import Connection
 from datetime import datetime, date
 import re
+from json import loads, dumps
 
 from app.common.database.utils import SqlRunner
 
@@ -173,26 +174,37 @@ def get_formatted_table_rows(
         for key, value in row.items():
             attr = attr_map.get(key)
 
-            # Handle NULL values
-            if value is None:
-                formatted_row[key] = "NULL"
+            if not attr:
+                formatted_row[key] = str(value)
                 continue
 
-            # Format based on data type if attribute exists
-            if attr:
-                if attr.data_type == DataTypes.TIMESTAMP.value:
-                    # Format timestamp as ISO string
-                    formatted_row[key] = value.isoformat()
-                elif attr.data_type == DataTypes.TIME.value:
-                    # Format time as HH:MM:SS
-                    formatted_row[key] = value.strftime("%H:%M:%S")
-                elif attr.data_type == DataTypes.DATE.value:
-                    formatted_row[key] = value.strftime("%Y-%m-%d")
-                else:
-                    formatted_row[key] = str(value)
-            else:
-                # For unknown columns, just convert to string
-                formatted_row[key] = str(value)
+            if attr.data_type == DataTypes.JSON.value:
+                try:
+                    # Parse and prettify JSON with 2-space indentation
+                    if isinstance(value, str):
+                        parsed_json = loads(value)
+                    else:
+                        parsed_json = value
+                    formatted_row[key] = dumps(
+                        parsed_json, ensure_ascii=False, indent=2
+                    )
+                except (ValueError, TypeError):
+                    formatted_row[key] = str(value)  # Fallback if JSON parsing fails
+                continue
+
+            if attr.data_type == DataTypes.TIMESTAMP.value:
+                formatted_row[key] = value.isoformat()
+                continue
+
+            if attr.data_type == DataTypes.TIME.value:
+                formatted_row[key] = value.strftime("%H:%M:%S")
+                continue
+
+            if attr.data_type == DataTypes.DATE.value:
+                formatted_row[key] = value.strftime("%Y-%m-%d")
+                continue
+
+            formatted_row[key] = str(value)
 
         formatted_rows.append(formatted_row)
 
@@ -499,16 +511,21 @@ def _convert_values_to_db_format(
             continue
 
         if isinstance(value, str):
-            # Handle timestamp conversion
-            if attr.data_type == DataTypes.TIMESTAMP.value:
+            if attr.data_type == DataTypes.JSON.value:
+                try:
+                    parsed_json = loads(value)
+                    values[key] = dumps(parsed_json, ensure_ascii=False)
+                except ValueError:
+                    raise ValueError(f"{attr.ukr_name}: Неправильний формат JSON")
+
+            elif attr.data_type == DataTypes.TIMESTAMP.value:
                 try:
                     values[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
                 except ValueError:
                     raise ValueError(
-                        f"{attr.ukr_name}: Неправильний фо��мат дати та часу"
+                        f"{attr.ukr_name}: Неправильний формат дати та часу"
                     )
 
-            # Handle date conversion
             elif attr.data_type == DataTypes.DATE.value:
                 try:
                     values[key] = date.fromisoformat(value)

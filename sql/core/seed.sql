@@ -7,7 +7,8 @@ insert into metadata.data_type (name) values
     ('serial'),
     ('time'),
     ('timestamp'),
-    ('boolean');
+    ('boolean'),
+    ('json');
 
 insert into metadata.fk_behavior (name) values
     ('cascade'),
