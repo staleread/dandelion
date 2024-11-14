@@ -15,6 +15,17 @@ def get_all_data_types(*, connection: Connection) -> list[DataType]:
     )
 
 
+def get_data_type_by_id(
+    *, connection: Connection, data_type_id: int
+) -> DataType | None:
+    return (
+        SqlRunner(connection=connection)
+        .query("""select * from metadata.data_type where id = :data_type_id""")
+        .bind(data_type_id=data_type_id)
+        .first(lambda x: DataType(**x))
+    )
+
+
 def get_data_type_by_name(
     *, connection: Connection, data_type: DataTypes
 ) -> DataType | None:
@@ -104,17 +115,13 @@ def insert_table_attribute(
     table_title: str,
     name: str,
     ukr_name: str,
-    data_type_id: int,
+    data_type: DataType,
     is_unique: bool,
     is_nullable: bool,
     is_primary: bool,
     constraint_pattern: str | None = None,
 ):
     name = _validate_attribute_name(name)
-    data_type = _find_data_type_by_id(connection=connection, data_type_id=data_type_id)
-
-    if not data_type:
-        raise ValueError("Недопустимий тип даних")
 
     if _attribute_exists(
         connection=connection,
@@ -162,7 +169,7 @@ def insert_table_attribute(
         table_id=table_id,
         name=name,
         ukr_name=ukr_name,
-        data_type_id=data_type_id,
+        data_type_id=data_type.id,
         is_primary=is_primary,
         is_unique=is_unique,
         is_nullable=is_nullable,

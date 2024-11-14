@@ -10,6 +10,7 @@ from ..table_attribute.models import Attribute, DisplayAttribute
 from ..table_attribute.enums import DataTypes
 from ..table_attribute.service import (
     insert_table_attribute,
+    get_data_type_by_id,
     get_data_type_by_name,
     get_display_attributes,
     update_secondary_attribute,
@@ -63,11 +64,31 @@ def create_table(*, connection: Connection, table_create: TableCreate):
         table_title=table_title,
         name="id",
         ukr_name="ID",
-        data_type_id=data_type.id,
+        data_type=data_type,
         is_unique=True,
         is_nullable=False,
         is_primary=True,
     )
+
+
+def delete_table(*, connection: Connection, table_id: int) -> None:
+    table = find_table_by_id(connection=connection, table_id=table_id)
+
+    if not table:
+        raise ValueError("Таблиця не існує")
+
+    if table.is_protected:
+        raise ValueError("Захищену таблицю не можна видалити")
+
+    sql = SqlRunner(connection=connection)
+
+    sql.query(f"""
+        drop table if exists "{table.title}"
+    """).execute_unsafe()
+
+    sql.query("""
+        delete from metadata.table where id = :table_id
+    """).bind(table_id=table_id).execute()
 
 
 def create_secondary_table_attribute(
@@ -80,12 +101,18 @@ def create_secondary_table_attribute(
     if not table:
         raise ValueError("Таблиця не існує")
 
-    data_type = get_data_type_by_name(
-        connection=connection, data_type=DataTypes.INTEGER
+    data_type = get_data_type_by_id(
+        connection=connection, data_type_id=attribute_create.data_type_id
     )
 
     if not data_type:
         raise ValueError("Не вдалося знайти тип даних для нової колонки")
+
+    if (
+        attribute_create.constraint_pattern
+        and data_type.name != DataTypes.INTEGER.value
+    ):
+        raise ValueError("Обмеження можна встановити лише для цілочисельних колонок")
 
     try:
         constraint = _parse_constraint_pattern(
@@ -100,7 +127,7 @@ def create_secondary_table_attribute(
         table_title=table.title,
         name=attribute_create.name,
         ukr_name=attribute_create.ukr_name,
-        data_type_id=attribute_create.data_type_id,
+        data_type=data_type,
         is_unique=attribute_create.is_unique,
         is_nullable=attribute_create.is_nullable,
         is_primary=IS_PRIMARY,
@@ -174,75 +201,6 @@ def delete_table_attribute(
     )
 
 
-def delete_table(*, connection: Connection, table_id: int) -> None:
-    table = find_table_by_id(connection=connection, table_id=table_id)
-
-    if not table:
-        raise ValueError("Таблиця не існує")
-
-    if table.is_protected:
-        raise ValueError("Захищену таблицю не можна видалити")
-
-    sql = SqlRunner(connection=connection)
-
-    sql.query(f"""
-        drop table if exists "{table.title}"
-    """).execute_unsafe()
-
-    sql.query("""
-        delete from metadata.table where id = :table_id
-    """).bind(table_id=table_id).execute()
-
-
-def get_formatted_table_rows(
-    *, connection: Connection, table_title: str, attributes: list[DisplayAttribute]
-) -> list[dict]:
-    rows = get_table_rows(connection=connection, table_title=table_title)
-    attr_map = {attr.name: attr for attr in attributes}
-
-    formatted_rows = []
-    for row in rows:
-        formatted_row = {}
-        for key, value in row.items():
-            attr = attr_map.get(key)
-
-            if not attr:
-                formatted_row[key] = str(value)
-                continue
-
-            if attr.data_type == DataTypes.JSON.value:
-                try:
-                    # Parse and prettify JSON with 2-space indentation
-                    if isinstance(value, str):
-                        parsed_json = loads(value)
-                    else:
-                        parsed_json = value
-                    formatted_row[key] = dumps(
-                        parsed_json, ensure_ascii=False, indent=2
-                    )
-                except (ValueError, TypeError):
-                    formatted_row[key] = str(value)  # Fallback if JSON parsing fails
-                continue
-
-            if attr.data_type == DataTypes.TIMESTAMP.value:
-                formatted_row[key] = value.isoformat()
-                continue
-
-            if attr.data_type == DataTypes.TIME.value:
-                formatted_row[key] = value.strftime("%H:%M:%S")
-                continue
-
-            if attr.data_type == DataTypes.DATE.value:
-                formatted_row[key] = value.strftime("%Y-%m-%d")
-                continue
-
-            formatted_row[key] = str(value)
-
-        formatted_rows.append(formatted_row)
-
-    return formatted_rows
-
-
 def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) -> None:
     table = find_table_by_id(connection=connection, table_id=table_id)
 
@@ -304,6 +262,55 @@ def delete_row(*, connection: Connection, table_id: int, row_id: int) -> None:
         table_title=table.title,
         row_id=row_id,
     )
+
+
+def get_formatted_table_rows(
+    *, connection: Connection, table_title: str, attributes: list[DisplayAttribute]
+) -> list[dict]:
+    rows = get_table_rows(connection=connection, table_title=table_title)
+    attr_map = {attr.name: attr for attr in attributes}
+
+    formatted_rows = []
+    for row in rows:
+        formatted_row = {}
+        for key, value in row.items():
+            attr = attr_map.get(key)
+
+            if not attr:
+                formatted_row[key] = str(value)
+                continue
+
+            if attr.data_type == DataTypes.JSON.value:
+                try:
+                    # Parse and prettify JSON with 2-space indentation
+                    if isinstance(value, str):
+                        parsed_json = loads(value)
+                    else:
+                        parsed_json = value
+                    formatted_row[key] = dumps(
+                        parsed_json, ensure_ascii=False, indent=2
+                    )
+                except (ValueError, TypeError):
+                    formatted_row[key] = str(value)  # Fallback if JSON parsing fails
+                continue
+
+            if attr.data_type == DataTypes.TIMESTAMP.value:
+                formatted_row[key] = value.isoformat()
+                continue
+
+            if attr.data_type == DataTypes.TIME.value:
+                formatted_row[key] = value.strftime("%H:%M:%S")
+                continue
+
+            if attr.data_type == DataTypes.DATE.value:
+                formatted_row[key] = value.strftime("%Y-%m-%d")
+                continue
+
+            formatted_row[key] = str(value)
+
+        formatted_rows.append(formatted_row)
+
+    return formatted_rows
 
 
 def _validate_row(
@@ -518,30 +525,32 @@ def _convert_values_to_db_format(
             continue
 
         attr = attr_map.get(key)
+
         if not attr:
             continue
 
-        if isinstance(value, str):
-            if attr.data_type == DataTypes.JSON.value:
-                try:
-                    parsed_json = loads(value)
-                    values[key] = dumps(parsed_json, ensure_ascii=False)
-                except ValueError:
-                    raise ValueError(f"{attr.ukr_name}: Неправильний формат JSON")
+        if not isinstance(value, str):
+            values[key] = str(value)
+            continue
 
-            elif attr.data_type == DataTypes.TIMESTAMP.value:
-                try:
-                    values[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
-                except ValueError:
-                    raise ValueError(
-                        f"{attr.ukr_name}: Неправильний формат дати та часу"
-                    )
+        if attr.data_type == DataTypes.JSON.value:
+            try:
+                parsed_json = loads(value)
+                values[key] = dumps(parsed_json, ensure_ascii=False)
+            except ValueError:
+                raise ValueError(f"{attr.ukr_name}: Неправильний формат JSON")
 
-            elif attr.data_type == DataTypes.DATE.value:
-                try:
-                    values[key] = date.fromisoformat(value)
-                except ValueError:
-                    raise ValueError(f"{attr.ukr_name}: Неправильний формат дати")
+        elif attr.data_type == DataTypes.TIMESTAMP.value:
+            try:
+                values[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError:
+                raise ValueError(f"{attr.ukr_name}: Неправильний формат дати та часу")
+
+        elif attr.data_type == DataTypes.DATE.value:
+            try:
+                values[key] = date.fromisoformat(value)
+            except ValueError:
+                raise ValueError(f"{attr.ukr_name}: Неправильний формат дати")
 
 
 def _parse_constraint_pattern(data_type: str, pattern: str | None) -> str | None:

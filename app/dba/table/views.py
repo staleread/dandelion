@@ -51,46 +51,12 @@ router = APIRouter(prefix="/table")
 
 
 @router.get("/", dependencies=[Depends(get_guest_user())])
-async def get_tables(sql: QueryRunnerDep, template: TemplateModelDep):
+async def get_tables_view(sql: QueryRunnerDep, template: TemplateModelDep):
     tables = sql.query("""
         select * from metadata.table
     """).many(lambda x: Table(**x))
 
     return template("dba/table/tables.html", TablesView(tables=tables))
-
-
-@router.get("/new", dependencies=[Depends(get_owner_user())])
-async def get_new_table_form(template: TemplateModelDep):
-    return template("dba/table/table_new.html", TableCreateResponse())
-
-
-@router.post("/new", dependencies=[Depends(get_owner_user())])
-async def post_new_table_form(
-    table_create: Annotated[TableCreate, Form()],
-    connection: ConnectionDep,
-    template: TemplateModelDep,
-):
-    try:
-        create_table(connection=connection, table_create=table_create)
-        return RedirectResponse(url="/dba/table", status_code=302)
-    except ValueError as e:
-        failure_response = TableCreateResponse(
-            **table_create.model_dump(),
-            error=str(e),
-        )
-        return template("dba/table/table_new.html", failure_response)
-
-
-@router.post("/{table_id}/delete", dependencies=[Depends(get_owner_user())])
-async def delete_table_handler(
-    table_id: int,
-    connection: ConnectionDep,
-):
-    try:
-        delete_table(connection=connection, table_id=table_id)
-        return RedirectResponse(url="/dba/table", status_code=302)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{table_id}/attribute", dependencies=[Depends(get_guest_user())])
@@ -105,7 +71,6 @@ async def get_table_attributes_view(
     rich_attributes = get_rich_display_attributes(
         connection=connection, table_id=table_id
     )
-    print(rich_attributes)
 
     return template(
         "dba/table/table_attributes.html",
@@ -113,58 +78,7 @@ async def get_table_attributes_view(
     )
 
 
-@router.get("/{table_id}/attribute/new", dependencies=[Depends(get_admin_user())])
-async def get_attribute_secondary_create_form(
-    table_id: int, connection: ConnectionDep, template: TemplateModelDep
-):
-    table = find_table_by_id(connection=connection, table_id=table_id)
-
-    if not table:
-        raise HTTPException(status_code=404)
-
-    data_types = get_all_data_types(connection=connection)
-
-    response = AttributeSecondaryCreateResponse(
-        table=table,
-        data_types=data_types,
-    )
-
-    return template("dba/table/table_attribute_new.html", response)
-
-
-@router.post("/{table_id}/attribute/new", dependencies=[Depends(get_admin_user())])
-async def post_attribute_secondary_create_form(
-    table_id: int,
-    attribute_create: Annotated[AttributeSecondaryCreate, Form()],
-    connection: ConnectionDep,
-    template: TemplateModelDep,
-):
-    try:
-        create_secondary_table_attribute(
-            connection=connection,
-            attribute_create=attribute_create,
-        )
-
-        return RedirectResponse(url=f"/dba/table/{table_id}/attribute", status_code=302)
-    except ValueError as e:
-        table = find_table_by_id(connection=connection, table_id=table_id)
-
-        if not table:
-            raise HTTPException(status_code=404)
-
-        data_types = get_all_data_types(connection=connection)
-
-        failure_response = AttributeSecondaryCreateResponse(
-            **attribute_create.model_dump(),
-            table=table,
-            data_types=data_types,
-            error=str(e),
-        )
-
-        return template("dba/table/table_attribute_new.html", failure_response)
-
-
-@router.get("/{table_id}/row")
+@router.get("/{table_id}/row", dependencies=[Depends(get_guest_user())])
 async def get_table_rows_view(
     table_id: int, user: GuestDep, template: TemplateModelDep, connection: ConnectionDep
 ):
@@ -188,7 +102,7 @@ async def get_table_rows_view(
     )
 
 
-@router.get("/{table_id}/row/new", dependencies=[Depends(get_admin_user())])
+@router.get("/{table_id}/row/new", dependencies=[Depends(get_operator_user())])
 async def get_row_create_form(
     table_id: int,
     connection: ConnectionDep,
@@ -249,7 +163,9 @@ async def post_row_create_form(
         )
 
 
-@router.get("/{table_id}/row/{row_id}/edit", dependencies=[Depends(get_admin_user())])
+@router.get(
+    "/{table_id}/row/{row_id}/edit", dependencies=[Depends(get_operator_user())]
+)
 async def get_row_update_form(
     table_id: int,
     row_id: int,
@@ -325,11 +241,81 @@ async def post_row_update_form(
         )
 
 
+@router.post(
+    "/{table_id}/row/{row_id}/delete", dependencies=[Depends(get_operator_user())]
+)
+async def delete_row_handler(
+    table_id: int,
+    row_id: int,
+    connection: ConnectionDep,
+):
+    try:
+        delete_row(
+            connection=connection,
+            table_id=table_id,
+            row_id=row_id,
+        )
+        return RedirectResponse(url=f"/dba/table/{table_id}/row", status_code=302)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{table_id}/attribute/new", dependencies=[Depends(get_admin_user())])
+async def get_attribute_secondary_create_form(
+    table_id: int, connection: ConnectionDep, template: TemplateModelDep
+):
+    table = find_table_by_id(connection=connection, table_id=table_id)
+
+    if not table:
+        raise HTTPException(status_code=404)
+
+    data_types = get_all_data_types(connection=connection)
+
+    response = AttributeSecondaryCreateResponse(
+        table=table,
+        data_types=data_types,
+    )
+
+    return template("dba/table/table_attribute_new.html", response)
+
+
+@router.post("/{table_id}/attribute/new", dependencies=[Depends(get_admin_user())])
+async def post_attribute_secondary_create_form(
+    table_id: int,
+    attribute_create: Annotated[AttributeSecondaryCreate, Form()],
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    try:
+        create_secondary_table_attribute(
+            connection=connection,
+            attribute_create=attribute_create,
+        )
+
+        return RedirectResponse(url=f"/dba/table/{table_id}/attribute", status_code=302)
+    except ValueError as e:
+        table = find_table_by_id(connection=connection, table_id=table_id)
+
+        if not table:
+            raise HTTPException(status_code=404)
+
+        data_types = get_all_data_types(connection=connection)
+
+        failure_response = AttributeSecondaryCreateResponse(
+            **attribute_create.model_dump(),
+            table=table,
+            data_types=data_types,
+            error=str(e),
+        )
+
+        return template("dba/table/table_attribute_new.html", failure_response)
+
+
 @router.get(
     "/{table_id}/attribute/{attribute_id}/edit",
     dependencies=[Depends(get_admin_user())],
 )
-async def get_attribute_edit_form(
+async def get_attribute_secondary_edit_form(
     table_id: int,
     attribute_id: int,
     connection: ConnectionDep,
@@ -366,7 +352,7 @@ async def get_attribute_edit_form(
     "/{table_id}/attribute/{attribute_id}/edit",
     dependencies=[Depends(get_admin_user())],
 )
-async def post_attribute_edit_form(
+async def post_attribute_secondary_edit_form(
     table_id: int,
     attribute_id: int,
     attribute_edit: Annotated[AttributeSecondaryEdit, Form()],
@@ -408,7 +394,7 @@ async def post_attribute_edit_form(
     "/{table_id}/attribute/{attribute_id}/delete",
     dependencies=[Depends(get_admin_user())],
 )
-async def delete_attribute_handler(
+async def post_attribute_secondary_delete(
     table_id: int,
     attribute_id: int,
     connection: ConnectionDep,
@@ -424,20 +410,35 @@ async def delete_attribute_handler(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post(
-    "/{table_id}/row/{row_id}/delete", dependencies=[Depends(get_operator_user())]
-)
-async def delete_row_handler(
+@router.get("/new", dependencies=[Depends(get_owner_user())])
+async def get_new_table_form(template: TemplateModelDep):
+    return template("dba/table/table_new.html", TableCreateResponse())
+
+
+@router.post("/new", dependencies=[Depends(get_owner_user())])
+async def post_new_table_form(
+    table_create: Annotated[TableCreate, Form()],
+    connection: ConnectionDep,
+    template: TemplateModelDep,
+):
+    try:
+        create_table(connection=connection, table_create=table_create)
+        return RedirectResponse(url="/dba/table", status_code=302)
+    except ValueError as e:
+        failure_response = TableCreateResponse(
+            **table_create.model_dump(),
+            error=str(e),
+        )
+        return template("dba/table/table_new.html", failure_response)
+
+
+@router.post("/{table_id}/delete", dependencies=[Depends(get_owner_user())])
+async def post_table_delete(
     table_id: int,
-    row_id: int,
     connection: ConnectionDep,
 ):
     try:
-        delete_row(
-            connection=connection,
-            table_id=table_id,
-            row_id=row_id,
-        )
-        return RedirectResponse(url=f"/dba/table/{table_id}/row", status_code=302)
+        delete_table(connection=connection, table_id=table_id)
+        return RedirectResponse(url="/dba/table", status_code=302)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
