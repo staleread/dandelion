@@ -43,6 +43,7 @@ from .service import (
     update_row,
     edit_secondary_table_attribute,
     delete_table_attribute,
+    delete_row,
 )
 
 
@@ -419,5 +420,24 @@ async def delete_attribute_handler(
             attribute_id=attribute_id,
         )
         return RedirectResponse(url=f"/dba/table/{table_id}/attribute", status_code=302)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post(
+    "/{table_id}/row/{row_id}/delete", dependencies=[Depends(get_operator_user())]
+)
+async def delete_row_handler(
+    table_id: int,
+    row_id: int,
+    connection: ConnectionDep,
+):
+    try:
+        delete_row(
+            connection=connection,
+            table_id=table_id,
+            row_id=row_id,
+        )
+        return RedirectResponse(url=f"/dba/table/{table_id}/row", status_code=302)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

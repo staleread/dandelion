@@ -63,14 +63,14 @@
 
                 <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
                     <li>
-                    <a href="/dba/table/{{ table.id }}/row/{{ row.id }}/edit">
-                        Редагувати
-                    </a>
+                        <a href="/dba/table/{{ table.id }}/row/{{ row.id }}/edit">
+                            Редагувати
+                        </a>
                     </li>
                     <li>
-                    <a href="/dba/table/{{ table.id }}/row/{{ row.id }}/delete">
-                        Видалити
-                    </a>
+                        <form action="/dba/table/{{ table.id }}/row/{{ row.id }}/delete" method="post" class="w-full">
+                            <button type="submit">Видалити</button>
+                        </form>
                     </li>
                 </ul>
             </div>

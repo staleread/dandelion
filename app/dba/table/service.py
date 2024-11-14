@@ -16,7 +16,12 @@ from ..table_attribute.service import (
     find_attribute_by_id,
     delete_attribute,
 )
-from ..table_row.service import get_table_rows
+from ..table_row.service import (
+    get_table_rows,
+    delete_row_by_id,
+    update_row_by_id,
+    insert_row,
+)
 from .models import TableCreate, Table, AttributeSecondaryCreate
 
 
@@ -142,6 +147,33 @@ def edit_secondary_table_attribute(
     )
 
 
+def delete_table_attribute(
+    *, connection: Connection, table_id: int, attribute_id: int
+) -> None:
+    table = find_table_by_id(connection=connection, table_id=table_id)
+    if not table:
+        raise ValueError("Таблиця не існує")
+
+    attribute = find_attribute_by_id(
+        connection=connection,
+        table_id=table_id,
+        attribute_id=attribute_id,
+    )
+
+    if not attribute:
+        raise ValueError("Атрибут не існує")
+
+    if attribute.is_primary:
+        raise ValueError("Не можна видалити первинний ключ")
+
+    delete_attribute(
+        connection=connection,
+        table_title=table.title,
+        attribute_id=attribute_id,
+        attribute_name=attribute.name,
+    )
+
+
 def delete_table(*, connection: Connection, table_id: int) -> None:
     table = find_table_by_id(connection=connection, table_id=table_id)
 
@@ -229,15 +261,11 @@ def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) ->
 
     _convert_values_to_db_format(values=values, attributes=attributes)
 
-    sql = SqlRunner(connection=connection)
-
-    columns = ", ".join(values.keys())
-    placeholders = ", ".join(f":{k}" for k in values.keys())
-
-    sql.query(f"""
-        insert into "{table.title}" ({columns})
-        values ({placeholders})
-    """).bind(**values).execute()
+    insert_row(
+        connection=connection,
+        table_title=table.title,
+        values=values,
+    )
 
 
 def update_row(
@@ -258,40 +286,23 @@ def update_row(
         exclude_current=True,
     )
 
-    sql = SqlRunner(connection=connection)
-
-    placeholders = ", ".join(f"{k} = :{k}" for k in values.keys())
-
-    sql.query(f"""
-        update "{table.title}" set {placeholders}
-        where id = :row_id
-    """).bind(**values, row_id=row_id).execute()
+    update_row_by_id(
+        connection=connection,
+        table_title=table.title,
+        row_id=row_id,
+        values=values,
+    )
 
 
-def delete_table_attribute(
-    *, connection: Connection, table_id: int, attribute_id: int
-) -> None:
+def delete_row(*, connection: Connection, table_id: int, row_id: int) -> None:
     table = find_table_by_id(connection=connection, table_id=table_id)
     if not table:
         raise ValueError("Таблиця не існує")
 
-    attribute = find_attribute_by_id(
-        connection=connection,
-        table_id=table_id,
-        attribute_id=attribute_id,
-    )
-
-    if not attribute:
-        raise ValueError("Атрибут не існує")
-
-    if attribute.is_primary:
-        raise ValueError("Не можна видалити первинний ключ")
-
-    delete_attribute(
+    delete_row_by_id(
         connection=connection,
         table_title=table.title,
-        attribute_id=attribute_id,
-        attribute_name=attribute.name,
+        row_id=row_id,
     )
 
 
@@ -318,7 +329,7 @@ def _validate_row(
     if len(primary_attrs) > 1:
         if len(secondary_attrs) > 0:
             raise RuntimeError(
-                "Композитний первинний ключ підтримується лише для таблиць, що допомагають встановити багато-до-багато відношення"
+                "Композитний первинний ключ підтримується лише для ��аблиць, що допомагають встановити багато-до-багато відношення"
             )
 
         check_pk = " and ".join(f"{a.name} = :{a.name}" for a in primary_attrs)
