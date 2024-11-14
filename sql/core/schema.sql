@@ -98,7 +98,7 @@ begin
         select 1 
         from information_schema.tables 
         where table_schema = 'public' 
-        and table_name = metadata.table.name
+        and table_name = metadata.table.title
     );
 end;
 $$ language plpgsql;
