@@ -10,7 +10,8 @@ prescribed tests, procedures, medications, etc.)
 
 It is necessary to provide the ability to call a district doctor to the
 house, to automate the issuance of various certificates and extracts for
-patients, to create work schedule of doctors and treatment rooms (in shifts on a certain day of the week).
+patients, to create work schedule of doctors and treatment rooms
+(in shifts on a certain day of the week).
 
 As a DB admin, depending on given permissions, the user can connect to a DB,
 access contents of DB tables, modify data in records, create/edit/delete
@@ -128,10 +129,6 @@ see a form for updating the entry or creating one if it was blank.
 - `can_connect` - Can connect to DB with credentials (login, password)
 - `can_read_public` - Can read contents of public DB tables
 
-> [!NOTE]
-> For now, public DB tables are all except the `user` table, which has
-> users' credentials
-
 `Operator`
 - Extends `Guest`'s permissions
 - `can_modify_records`- Can add/modify/delete records
@@ -141,7 +138,6 @@ see a form for updating the entry or creating one if it was blank.
 - `can_modify_attributes` - Can modify table structure:
     - Add/delete attribute
     - Rename attribute
-    - Change attribute's type
 - `can_add_user` - Can add users of type `Guest`
 - `can_add_operator` - Can add users of type `Operator`
 
