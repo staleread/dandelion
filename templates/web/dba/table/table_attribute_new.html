@@ -13,7 +13,7 @@
 {% block form_content %}
 {% if error %}
 <div class="toast toast-top toast-center">
-    <div class="alert alert-error w-64 flex justify-center">
+    <div class="alert alert-error w-80 flex justify-center">
         <span class="text-wrap text-center">{{ error }}</span>
     </div>
 </div>
@@ -57,7 +57,7 @@
     </label>
 </div>
 <div class="form-control">
-    <label for="constraint_pattern">Обмеження значень (опціонально)</label>
+    <label for="constraint_pattern">Обмеження значень</label>
     <input type="text" class="input input-bordered" id="constraint_pattern" name="constraint_pattern"
         value="{{ constraint_pattern if constraint_pattern else '' }}"
         placeholder="e.g. between 1 and 7 or in (1, 2)"
