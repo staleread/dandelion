@@ -25,6 +25,15 @@ class UserLoginResponse(UserLogin):
     error: str = ""
 
 
+class UserReset(BaseModel):
+    username: str = ""
+    password: str = ""
+
+
+class UserResetResponse(UserReset):
+    error: str = ""
+
+
 class UserTokenPayload(BaseModel):
     # ignore JWT claims
     model_config = ConfigDict(extra="ignore")

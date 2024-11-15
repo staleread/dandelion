@@ -1,8 +1,8 @@
 {% extends "base/form.html" %}
 
-{% block title_page %}Вхід{% endblock %}
-{% block form_title %}Вхід{% endblock %}
-{% block form_action %}/dba/user/login{% endblock %}
+{% block title_page %}Відновлення паролю{% endblock %}
+{% block form_title %}Відновлення паролю{% endblock %}
+{% block form_action %}/dba/user/reset{% endblock %}
 
 {% block form_content %}
 {% if error %}
@@ -30,7 +30,7 @@
 
 <div class="form-control">
     <label class="label">
-        <span class="label-text">Пароль</span>
+        <span class="label-text">Новий пароль</span>
     </label>
     <div class="input input-bordered flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
@@ -40,16 +40,11 @@
         <input type="password" name="password" pattern="[A-Za-z\d]{3,}" required class="grow"
             placeholder="Введіть пароль" />
     </div>
-    <label class="label">
-        <a href="/dba/user/reset" class="label-text-alt link link-hover">
-            Забули пароль?
-        </a>
-    </label>
 </div>
 {% endblock %}
 
 {% block form_buttons %}
 <div class="form-control mt-4 flex-1">
-    <button type="submit" class="btn btn-primary">Ввійти</button>
+    <button type="submit" class="btn btn-primary">Відновити пароль</button>
 </div>
 {% endblock %}

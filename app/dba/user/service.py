@@ -6,7 +6,15 @@ from sqlalchemy import Connection
 from app.config import settings
 from app.common.database.utils import SqlRunner
 
-from .models import User, UserLogin, UserTokenPayload, UserInfo, Role, UserAdd
+from .models import (
+    User,
+    UserLogin,
+    UserTokenPayload,
+    UserInfo,
+    Role,
+    UserAdd,
+    UserReset,
+)
 from .enums import Permissions
 
 
@@ -81,6 +89,22 @@ def add_user(
     """).bind(
         username=username, password=hashed_password, role_id=user_add.role
     ).execute()
+
+
+def reset_password(*, connection: Connection, user_reset: UserReset) -> None:
+    username = _validate_username(user_reset.username)
+    password = _validate_password(user_reset.password)
+
+    user = _find_user(connection=connection, username=username)
+
+    if not user:
+        raise ValueError("Користувача з таким ім'ям не знайдено")
+
+    hashed_password = _hash_password(password)
+
+    SqlRunner(connection=connection).query("""
+        update "user" set hashed_password = :hashed_password where username = :username
+    """).bind(hashed_password=hashed_password, username=username).execute()
 
 
 def get_available_roles(*, connection: Connection) -> list[Role]:

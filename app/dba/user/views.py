@@ -7,8 +7,16 @@ from app.common.template.utils import TemplateModelDep, TemplateContextDep
 from app.common.database.utils import ConnectionDep, QueryRunnerDep
 from app.dba.user.utils import GuestDep, get_guest_user
 
-from .service import login_user, get_available_roles, add_user
-from .models import UserLogin, UserLoginResponse, UserAdd, UserAddResponse, DisplayUser
+from .service import login_user, get_available_roles, add_user, reset_password
+from .models import (
+    UserLogin,
+    UserLoginResponse,
+    UserAdd,
+    UserAddResponse,
+    DisplayUser,
+    UserReset,
+    UserResetResponse,
+)
 
 
 router = APIRouter(prefix="/user")
@@ -87,3 +95,22 @@ async def post_user_add_form(
             **user_add.model_dump(), error=str(e), available_roles=available_roles
         )
         return template("dba/user/user_add.html", failure_response)
+
+
+@router.get("/reset")
+async def get_reset_form(template: TemplateModelDep):
+    return template("dba/user/reset.html", UserResetResponse())
+
+
+@router.post("/reset")
+async def post_reset_form(
+    user_reset: Annotated[UserReset, Form()],
+    template: TemplateModelDep,
+    connection: ConnectionDep,
+):
+    try:
+        reset_password(connection=connection, user_reset=user_reset)
+        return RedirectResponse(url="/dba/user/login", status_code=302)
+    except ValueError as e:
+        failure_response = UserResetResponse(**user_reset.model_dump(), error=str(e))
+        return template("dba/user/reset.html", failure_response)
