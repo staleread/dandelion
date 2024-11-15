@@ -4,6 +4,11 @@
 {% block form_title %}Новий користувач{% endblock %}
 {% block form_action %}/dba/user/add{% endblock %}
 
+{% block breadcrumbs %}
+    <li><a href="/dba/user">Користувачі</a></li>
+    <li>Новий користувач</li>
+{% endblock %}
+
 {% block form_content %}
 {% if error %}
 <div class="toast toast-top toast-center">
