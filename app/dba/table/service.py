@@ -229,6 +229,8 @@ def add_row(*, connection: Connection, table_id: int, values: dict[str, Any]) ->
 def update_row(
     *, connection: Connection, table_id: int, row_id: int, values: dict[str, Any]
 ) -> None:
+    values["id"] = row_id
+
     table = find_table_by_id(connection=connection, table_id=table_id)
 
     if not table:
@@ -243,6 +245,10 @@ def update_row(
         values=values,
         exclude_current=True,
     )
+
+    del values["id"]
+
+    _convert_values_to_db_format(values=values, attributes=attributes)
 
     update_row_by_id(
         connection=connection,
@@ -268,10 +274,10 @@ def get_formatted_table_rows(
     *, connection: Connection, table_title: str, attributes: list[DisplayAttribute]
 ) -> list[dict]:
     rows = get_table_rows(connection=connection, table_title=table_title)
-    return [format_row(row=row, attributes=attributes) for row in rows]
+    return [format_row_for_display(row=row, attributes=attributes) for row in rows]
 
 
-def format_row(
+def format_row_for_display(
     *, row: dict[str, Any], attributes: list[DisplayAttribute]
 ) -> dict[str, str]:
     attr_map = {attr.name: attr for attr in attributes}
@@ -281,7 +287,56 @@ def format_row(
         attr = attr_map.get(key)
 
         if not attr:
-            formatted_row[key] = str(value)
+            continue
+
+        if value is None:
+            formatted_row[key] = "NULL"
+            continue
+
+        if attr.data_type == DataTypes.JSON.value:
+            try:
+                # Parse and prettify JSON with 2-space indentation
+                if isinstance(value, str):
+                    parsed_json = loads(value)
+                else:
+                    parsed_json = value
+                formatted_row[key] = dumps(parsed_json, ensure_ascii=False, indent=2)
+            except (ValueError, TypeError):
+                formatted_row[key] = str(value)  # Fallback if JSON parsing fails
+            continue
+
+        if attr.data_type == DataTypes.TIMESTAMP.value:
+            formatted_row[key] = value.isoformat()
+            continue
+
+        if attr.data_type == DataTypes.TIME.value:
+            formatted_row[key] = value.strftime("%H:%M")
+            continue
+
+        if attr.data_type == DataTypes.DATE.value:
+            formatted_row[key] = value.strftime("%Y-%m-%d")
+            continue
+
+        formatted_row[key] = str(value)
+
+    return formatted_row
+
+
+def format_row_for_edit(
+    *, row: dict[str, Any], attributes: list[DisplayAttribute]
+) -> dict[str, str]:
+    attr_map = {attr.name: attr for attr in attributes}
+    formatted_row = {}
+
+    for key, value in row.items():
+        attr = attr_map.get(key)
+
+        if not attr:
+            formatted_row[key] = ""
+            continue
+
+        if value is None:
+            formatted_row[key] = ""
             continue
 
         if attr.data_type == DataTypes.JSON.value:
@@ -525,9 +580,20 @@ def _convert_values_to_db_format(
             continue
 
         attr = attr_map.get(key)
-
         if not attr:
             continue
+
+        # Handle empty strings for text-like fields
+        if (
+            isinstance(value, str)
+            and value.strip() == ""
+            and attr.data_type in ["varchar", "text"]
+        ):
+            if attr.is_nullable:
+                values[key] = None
+                continue
+            else:
+                raise ValueError(f"{attr.ukr_name}: Це поле є обов'язковим")
 
         if not isinstance(value, str):
             values[key] = str(value)

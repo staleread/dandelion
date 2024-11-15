@@ -58,6 +58,7 @@ def get_display_attributes(
         left join metadata.foreign_key fk on fk.attribute_id = a.id
         join metadata.data_type dt on dt.id = a.data_type_id
         where a.table_id = :table_id
+        order by a.id
     """)
         .bind(table_id=table_id)
         .many(lambda x: DisplayAttribute(**x))
@@ -88,6 +89,7 @@ def get_rich_display_attributes(
         left join metadata.attribute ra on ra.id = fk.referenced_attribute_id
         left join metadata.table ft on ft.id = ra.table_id
         where a.table_id = :table_id
+        order by a.id
     """)
         .bind(table_id=table_id)
         .many(lambda x: DisplayAttributeRich(**x))

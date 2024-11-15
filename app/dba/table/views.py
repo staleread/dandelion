@@ -41,7 +41,7 @@ from .service import (
     get_formatted_table_rows,
     add_row,
     update_row,
-    format_row,
+    format_row_for_edit,
     edit_secondary_table_attribute,
     delete_table_attribute,
     delete_row,
@@ -55,6 +55,7 @@ router = APIRouter(prefix="/table")
 async def get_tables_view(sql: QueryRunnerDep, template: TemplateModelDep):
     tables = sql.query("""
         select * from metadata.table
+        order by id
     """).many(lambda x: Table(**x))
 
     return template("dba/table/tables.html", TablesView(tables=tables))
@@ -193,7 +194,7 @@ async def get_row_update_form(
         if attr.data_type != "serial"
     ]
 
-    formatted_row = format_row(row=row, attributes=attributes)
+    formatted_row = format_row_for_edit(row=row, attributes=attributes)
 
     return template(
         "dba/table/table_row_edit.html",

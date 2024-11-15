@@ -33,7 +33,7 @@ create table room_type (
 create table room (
     id serial primary key,
     room_number varchar not null unique,
-    room_type_id integer null,
+    room_type_id integer not null,
     constraint fk_room_type foreign key (room_type_id) references room_type(id)
         on update cascade
         on delete set null

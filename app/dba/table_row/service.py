@@ -6,7 +6,10 @@ from app.common.database.utils import SqlRunner
 def get_table_rows(*, connection: Connection, table_title: str) -> list[dict]:
     return (
         SqlRunner(connection=connection)
-        .query(f'select * from "{table_title}"')
+        .query(f"""
+            select * from "{table_title}"
+            order by id
+        """)
         .many_rows()
     )
 
@@ -44,7 +47,7 @@ def update_row_by_id(
     sql.query(f"""
         update "{table_title}" set {placeholders}
         where id = :row_id
-    """).bind(**values, row_id=row_id).execute()
+    """).bind(**{k: v for k, v in values.items() if k != "id"}, row_id=row_id).execute()
 
 
 def delete_row_by_id(*, connection: Connection, table_title: str, row_id: int) -> None:
