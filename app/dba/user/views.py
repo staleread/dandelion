@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Form, Depends
+from fastapi import APIRouter, Form, Depends, Query
 from fastapi.responses import RedirectResponse
 
 from app.config import settings
@@ -23,12 +23,21 @@ router = APIRouter(prefix="/user")
 
 
 @router.get("/", dependencies=[Depends(get_guest_user())])
-async def get_users_view(template: TemplateContextDep, sql: QueryRunnerDep):
-    display_users = sql.query("""
+async def get_users_view(
+    template: TemplateContextDep,
+    sql: QueryRunnerDep,
+    search: Annotated[str, Query(description="Search by username")] = "",
+):
+    display_users = (
+        sql.query("""
         select u.id, u.username, r.name as role
         from "user" u
         join "role" r on u.role_id = r.id
-    """).many(lambda x: DisplayUser(**x))
+        where u.username ilike :search
+    """)
+        .bind(search=f"%{search}%")
+        .many(lambda x: DisplayUser(**x))
+    )
 
     return template("dba/user/users.html", {"users": display_users})
 

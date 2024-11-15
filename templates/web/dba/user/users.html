@@ -1,5 +1,7 @@
 {% extends "base/page_table.html" %}
 
+{% block title_page %}Користувачі{% endblock %}
+
 {% block breadcrumbs %}
     <li>Користувачі</li>
 {% endblock %}
@@ -13,10 +15,19 @@
 {% block table_title %}Користувачі{% endblock %}
 
 {% block table_actions %}
-<a href="/dba/user/add"
-    class="btn btn-sm btn-primary">
-    Додати користувача
-</a>
+<div class="flex gap-2">
+    <form action="/dba/user" method="GET" class="join">
+        <input type="text" name="search" placeholder="Пошук за іменем" class="input input-sm join-item" />
+        <button type="submit" class="btn btn-primary btn-sm join-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                <path d="M6.5 1a5.5 5.5 0 0 1 4.383 8.823l3.896 3.896a.75.75 0 0 1-1.06 1.06l-3.896-3.896A5.5 5.5 0 1 1 6.5 1Zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+            </svg>
+        </button>
+    </form>
+    <a href="/dba/user/add" class="btn btn-sm btn-primary">
+        Додати користувача
+    </a>
+</div>
 {% endblock %}
 
 {% block table_header_row %}
