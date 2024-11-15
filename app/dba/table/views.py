@@ -41,6 +41,7 @@ from .service import (
     get_formatted_table_rows,
     add_row,
     update_row,
+    format_row,
     edit_secondary_table_attribute,
     delete_table_attribute,
     delete_row,
@@ -192,10 +193,12 @@ async def get_row_update_form(
         if attr.data_type != "serial"
     ]
 
+    formatted_row = format_row(row=row, attributes=attributes)
+
     return template(
         "dba/table/table_row_edit.html",
         RowUpdateResponse(
-            table=table, attributes=attributes, row_id=row_id, values=row
+            table=table, attributes=attributes, row_id=row_id, values=formatted_row
         ),
     )
 

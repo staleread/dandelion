@@ -50,6 +50,12 @@
                 value="{{ values[attr.name] or '' }}"
                 {% if not attr.is_nullable %}required{% endif %}
                 class="input input-bordered w-full">
+    {% elif attr.data_type in ['time'] %}
+        <input type="time"
+                name="{{ attr.name }}"
+                value="{{ values[attr.name] or '' }}"
+                {% if not attr.is_nullable %}required{% endif %}
+                class="input input-bordered w-full">
     {% elif attr.data_type in ['timestamp'] %}
         <input type="datetime-local"
                 name="{{ attr.name }}"
