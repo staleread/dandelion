@@ -70,24 +70,8 @@ def add_user(
     if not role:
         raise ValueError("Обрана роль не існує")
 
-    if role == "guest" and Permissions.CAN_ADD_USER not in current_user_permissions:
-        raise ValueError("Ви не маєте прав для створення користувачів з роллю гостя")
-
-    if (
-        role == "operator"
-        and Permissions.CAN_ADD_OPERATOR not in current_user_permissions
-    ):
-        raise ValueError(
-            "Ви не маєте прав для створення користувачів з роллю оператора"
-        )
-
-    if role == "admin" and Permissions.CAN_ADD_ADMIN not in current_user_permissions:
-        raise ValueError(
-            "Ви не маєте прав для створення користувачів з роллю адміністратора"
-        )
-
-    if role == "owner":
-        raise ValueError("Ви не маєте прав для створення користувачів з роллю власника")
+    if Permissions("can_add_" + role) not in current_user_permissions:
+        raise ValueError(f"Ви не маєте прав для створення користувачів з роллю {role}")
 
     hashed_password = _hash_password(password)
 
