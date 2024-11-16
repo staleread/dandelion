@@ -16,6 +16,8 @@ from app.classic.query.service import (
     get_doctor_schedule,
     get_profile_types_for_dropdown,
     get_doctors_count_by_profile,
+    get_patients_with_home_visits,
+    get_doctors_home_visits_count,
 )
 
 router = APIRouter(prefix="/query")
@@ -226,3 +228,21 @@ async def get_doctors_count_by_profile_view(
             "selected_profile_id": profile_id,
         },
     )
+
+
+@router.get("/patients_home_visits")
+async def get_patients_home_visits_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    patients = get_patients_with_home_visits(sql)
+    return template("/classic/query/patients_home_visits.html", {"patients": patients})
+
+
+@router.get("/doctors_home_visits_count")
+async def get_doctors_home_visits_count_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    visits = get_doctors_home_visits_count(sql)
+    return template("/classic/query/doctors_home_visits_count.html", {"visits": visits})

@@ -337,3 +337,50 @@ def get_doctors_count_by_profile(sql: SqlQueryRunner, profile_id: int | None) ->
     )
 
     return result if result else 0
+
+
+def get_patients_with_home_visits(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        WITH LastHomeVisits AS (
+            SELECT 
+                patient_id,
+                home_visit_address,
+                ROW_NUMBER() OVER (
+                    PARTITION BY patient_id 
+                    ORDER BY visit_date DESC
+                ) as rn
+            FROM visit
+            JOIN medical_history ON visit.medical_history_id = medical_history.id
+            WHERE home_visit_address IS NOT NULL
+        )
+        SELECT 
+            patient.last_name || ' ' || 
+            LEFT(patient.first_name, 1) || '.' ||
+            CASE WHEN patient.patronymic IS NOT NULL 
+                THEN LEFT(patient.patronymic, 1) || '.'
+                ELSE ''
+            END AS patient_name,
+            LastHomeVisits.home_visit_address as last_visit_address
+        FROM LastHomeVisits
+        JOIN patient ON LastHomeVisits.patient_id = patient.id
+        WHERE rn = 1
+        ORDER BY patient.last_name, patient.first_name;
+    """).many_rows()
+
+
+def get_doctors_home_visits_count(sql: SqlQueryRunner) -> list[dict]:
+    """Get count of home visits handled by each doctor."""
+    return sql.query("""
+        SELECT 
+            doctor.last_name || ' ' || 
+            LEFT(doctor.first_name, 1) || '.' ||
+            CASE WHEN doctor.patronymic IS NOT NULL 
+                THEN LEFT(doctor.patronymic, 1) || '.'
+                ELSE ''
+            END AS doctor_name,
+            COUNT(CASE WHEN home_visit_address IS NOT NULL THEN 1 END) as home_visits_count
+        FROM doctor
+        LEFT JOIN visit ON doctor.id = visit.doctor_id
+        GROUP BY doctor.id, doctor.last_name, doctor.first_name, doctor.patronymic
+        ORDER BY home_visits_count DESC, doctor.last_name
+    """).many_rows()
