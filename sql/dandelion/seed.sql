@@ -360,7 +360,8 @@ insert into procedure (name, description) values
     (N'Глюкометрія', N'Вимірювання рівня глюкози в крові'),
     (N'Взяття мазка', N'Забір біологічного матеріалу для лабораторного дослідження'),
     (N'Фізіотерапевтичні процедури', N'Лікувальні процедури з використанням фізичних факторів'),
-    (N'Ін''єкція', N'Внутрішньом''язове або внутрішньовенне введення лікарських засобів');
+    (N'Ін''єкція', N'Внутрішньом''язове або внутрішньовенне введення лікарських засобів'),
+    (N'Флюрографія', N'Рентгенологічне дослідження органів грудної клітки для діагностики захворювань легень');
 
 insert into visit (medical_history_id, doctor_id, visit_date, start_time, end_time, diagnosis, status_id, home_visit_address) values
     -- Past regular visits (at clinic)
@@ -413,7 +414,22 @@ insert into visit (medical_history_id, doctor_id, visit_date, start_time, end_ti
     -- Regular future appointments
     (13, 2, '2024-12-01', '11:00', '11:30', null, 1, null),
     (14, 3, '2024-12-05', '14:00', '14:30', null, 1, null),
-    (15, 4, '2024-12-10', '15:00', '15:30', null, 1, null);
+    (15, 4, '2024-12-10', '15:00', '15:30', null, 1, null),
+    
+    -- Regular completed visits
+    (4, 1, '2024-11-10', '10:00', '10:30', N'Профілактичний огляд', 3, null),
+    (7, 7, '2024-11-12', '14:00', '14:30', N'Бронхіт', 3, null),
+    (11, 1, '2024-11-15', '09:00', '09:30', N'Профілактичний огляд', 3, null),
+    
+    -- Patient 1 seeing multiple doctors (Nov 12-16)
+    (1, 1, '2024-11-12', '09:00', '09:30', 'Профілактичний огляд', 3, null),  -- Терапевт
+    (1, 3, '2024-11-13', '10:00', '10:30', 'Гіпертонія', 3, null),            -- Кардіолог
+    (1, 5, '2024-11-15', '11:00', '11:30', 'Міопія', 3, null),                -- Офтальмолог
+    
+    -- Patient 2 seeing multiple doctors (Nov 12-16)
+    (2, 1, '2024-11-12', '14:00', '14:30', 'Профілактичний огляд', 3, null),  -- Терапевт
+    (2, 4, '2024-11-14', '15:00', '15:30', 'Артрит', 3, null),                -- Ортопед
+    (2, 6, '2024-11-16', '16:00', '16:30', 'Гастрит', 3, null);               -- Гастроентеролог
 
 insert into line_procedure (visit_id, procedure_id, room_id) values
     -- Regular visits
@@ -466,7 +482,12 @@ insert into line_procedure (visit_id, procedure_id, room_id) values
     
     -- Home visit
     (25, 1, null),  -- Blood pressure for food poisoning at home
-    (25, 13, null); -- Swab taking for food poisoning at home
+    (25, 13, null), -- Swab taking for food poisoning at home
+    
+    -- Fluorography procedures
+    ((select max(id)-2 from visit), (select id from procedure where name = N'Флюрографія'), 5),
+    ((select max(id)-1 from visit), (select id from procedure where name = N'Флюрографія'), 5),
+    ((select max(id) from visit), (select id from procedure where name = N'Флюрографія'), 5);
 
 insert into document_type (name, description, template) values
     (N'Листок непрацездатності', N'дає право на звільнення від роботи у зв’язку з непрацездатністю та призначення матеріального забезпечення застрахованій особі в разі тимчасової непрацездатності, вагітності та пологів', '{"patient_full_name": "ПІБ пацієнта", "doctor_full_name": "ПІБ лікаря", "diagnosis": "Назва захворювання", "start_date": "Дата початку непрацездатності", "end_date": "Дата закінчення непрацездатності", "issue_date": "Дата видачі листка"}'),
@@ -536,4 +557,12 @@ insert into vaccination (doctor_id, medical_history_id, vaccination_type_id, com
     -- Second doses planned (for those who completed first dose)
     (1, 1, 2, null, '2024-12-06', '2025-12-06'),  -- Коронавірус second dose
     (3, 3, 1, null, '2024-12-15', '2025-12-15'),  -- Гепатит B second dose
-    (7, 5, 2, null, '2024-12-20', '2025-12-20');  -- Коронавірус second dose
+    (7, 5, 2, null, '2024-12-20', '2025-12-20'),  -- Коронавірус second dose
+    
+    -- Overdue vaccinations (accept_until in past, completed_date is null)
+    (1, 10, 1, null, '2024-09-01', '2024-10-01'),  -- Overdue Гепатит B for patient 10
+    (3, 11, 2, null, '2024-08-15', '2024-09-15'),  -- Overdue Коронавірус for patient 11
+    (7, 12, 3, null, '2024-07-01', '2024-08-01'),  -- Overdue Поліомієліт for patient 12
+    (1, 13, 2, null, '2024-09-15', '2024-10-15'),  -- Overdue Коронавірус for patient 13
+    (3, 14, 1, null, '2024-08-01', '2024-09-01'),  -- Overdue Гепатит B for patient 14
+    (7, 15, 3, null, '2024-09-01', '2024-10-01');  -- Overdue Поліомієліт for patient 15

@@ -1,27 +1,27 @@
 <ul>
     <!-- Domain Queries -->
     <li>
-        <a href="/classic/query/therapists_schedule">Розклад терапевтів</a>
+        <a href="/classic/query/therapist/schedule">Розклад терапевтів</a>
     </li>
     <li>
         <details>
             <summary>Огляд лікарів</summary>
             <ul>
-                <li><a href="/classic/query/doctors_overview">Інформація про лікарів</a></li>
-                <li><a href="/classic/query/given_documents">Видані документи</a></li>
-                <li><a href="/classic/query/doctors_visits_per_week">Кількість відвідувань за тиждень</a></li>
+                <li><a href="/classic/query/doctor/overview">Інформація про лікарів</a></li>
+                <li><a href="/classic/query/document/given">Видані документи</a></li>
+                <li><a href="/classic/query/doctor/visits_per_week">Кількість відвідувань за тиждень</a></li>
             </ul>
         </details>
     </li>
     <li>
-        <a href="/classic/query/patient_search/by_last_name">Пошук пацієнтів</a>
+        <a href="/classic/query/patient/search/by_last_name">Пошук пацієнтів</a>
     </li>
     <li>
         <details>
             <summary>Статистика пацієнтів</summary>
             <ul>
-                <li><a href="/classic/query/patients_multiple_doctors">Пацієнти з візитами різних лікарів</a></li>
-                <li><a href="/classic/query/angina_patients_count">Хворі на ангіну за останній місяць</a></li>
+                <li><a href="/classic/query/patient/multiple_doctors">Пацієнти з візитами різних лікарів</a></li>
+                <li><a href="/classic/query/patient/angina_patients_count">Хворі на ангіну за останній місяць</a></li>
             </ul>
         </details>
     </li>
@@ -29,8 +29,8 @@
         <details>
             <summary>Статистика лікарів</summary>
             <ul>
-                <li><a href="/classic/query/doctor_schedule/week">Графік роботи лікаря</a></li>
-                <li><a href="/classic/query/doctors_count_by_profile">Лікарі за спеціальністю</a></li>
+                <li><a href="/classic/query/doctor/schedule/week">Графік роботи лікаря</a></li>
+                <li><a href="/classic/query/doctor/count_by_profile">Лікарі за спеціальністю</a></li>
             </ul>
         </details>
     </li>
@@ -38,16 +38,28 @@
         <details>
             <summary>Виклики додому</summary>
             <ul>
-                <li><a href="/classic/query/patients_home_visits">Пацієнти з викликами додому</a></li>
-                <li><a href="/classic/query/doctors_home_visits_count">Домашні виклики за лікарями</a></li>
+                <li><a href="/classic/query/patient/home_visits">Пацієнти з викликами додому</a></li>
+                <li><a href="/classic/query/doctor/home_visits_count">Домашні виклики за лікарями</a></li>
             </ul>
         </details>
     </li>
     <li>
-        <a>Процедури</a>
+        <details>
+            <summary>Процедури</summary>
+            <ul>
+                <li><a href="/classic/query/procedure">Перелік процедур</a></li>
+                <li><a href="/classic/query/procedure/recent_count">Кількість процедур за тиждень</a></li>
+            </ul>
+        </details>
     </li>
     <li>
-        <a>Вакцинації</a>
+        <details>
+            <summary>Процедури та щеплення</summary>
+            <ul>
+                <li><a href="/classic/query/procedure/fluorography">Пацієнти на флюрографію</a></li>
+                <li><a href="/classic/query/vaccination/overdue">Пропущені щеплення</a></li>
+            </ul>
+        </details>
     </li>
     <li>
         <a>Фізіотерапія</a>
@@ -60,13 +72,7 @@
     
     <!-- Domain Commands -->
     <li>
-        <a>Створити виклик додому</a>
-    </li>
-    <li>
         <a href="/classic/command/document">Видати документ</a>
-    </li>
-    <li>
-        <a>Оновити розклад кабінету</a>
     </li>
     
     <div class="divider m-0"></div>

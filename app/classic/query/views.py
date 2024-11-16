@@ -18,12 +18,17 @@ from app.classic.query.service import (
     get_doctors_count_by_profile,
     get_patients_with_home_visits,
     get_doctors_home_visits_count,
+    get_procedures_list,
+    get_last_week_procedures_count,
+    get_last_week_procedures_patients,
+    get_fluorography_patients_by_date,
+    get_overdue_vaccinations_patients,
 )
 
 router = APIRouter(prefix="/query")
 
 
-@router.get("/therapists_schedule")
+@router.get("/therapist/schedule")
 async def get_therapists_schedule_view(
     sql: QueryRunnerDep, template: TemplateContextDep
 ):
@@ -31,7 +36,7 @@ async def get_therapists_schedule_view(
     return template("/classic/query/therapists_schedule.html", {"schedules": schedules})
 
 
-@router.get("/doctors_overview")
+@router.get("/doctor/overview")
 async def get_doctors_overview_view(sql: QueryRunnerDep, template: TemplateContextDep):
     doctors = sql.query("""
         SELECT 
@@ -48,7 +53,7 @@ async def get_doctors_overview_view(sql: QueryRunnerDep, template: TemplateConte
     return template("/classic/query/doctors_overview.html", {"doctors": doctors})
 
 
-@router.get("/given_documents")
+@router.get("/document/given")
 async def get_given_documents_view(sql: QueryRunnerDep, template: TemplateContextDep):
     documents = sql.query("""
         SELECT 
@@ -70,7 +75,7 @@ async def get_given_documents_view(sql: QueryRunnerDep, template: TemplateContex
     return template("/classic/query/given_documents.html", {"documents": documents})
 
 
-@router.get("/doctors_visits_per_week")
+@router.get("/doctor/visits_per_week")
 async def get_doctors_visits_per_week_view(
     sql: QueryRunnerDep, template: TemplateContextDep
 ):
@@ -94,7 +99,7 @@ async def get_doctors_visits_per_week_view(
     return template("/classic/query/doctors_visits_per_week.html", {"visits": visits})
 
 
-@router.get("/patient_search/by_last_name")
+@router.get("/patient/search/by_last_name")
 async def search_by_last_name_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -109,7 +114,7 @@ async def search_by_last_name_view(
     )
 
 
-@router.get("/patient_search/by_history")
+@router.get("/patient/search/by_history")
 async def search_by_history_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -124,7 +129,7 @@ async def search_by_history_view(
     )
 
 
-@router.get("/patient_search/by_health")
+@router.get("/patient/search/by_health")
 async def search_by_health_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -137,7 +142,7 @@ async def search_by_health_view(
     )
 
 
-@router.get("/patient_search/by_therapist")
+@router.get("/patient/search/by_therapist")
 async def search_by_therapist_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -152,7 +157,7 @@ async def search_by_therapist_view(
     )
 
 
-@router.get("/patients_multiple_doctors")
+@router.get("/patient/multiple_doctors")
 async def get_patients_multiple_doctors_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -163,7 +168,7 @@ async def get_patients_multiple_doctors_view(
     )
 
 
-@router.get("/angina_patients_count")
+@router.get("/patient/angina_patients_count")
 async def get_angina_patients_count_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -174,7 +179,7 @@ async def get_angina_patients_count_view(
     )
 
 
-@router.get("/doctor_schedule/week")
+@router.get("/doctor/schedule/week")
 async def get_doctor_week_schedule_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -193,7 +198,7 @@ async def get_doctor_week_schedule_view(
     )
 
 
-@router.get("/doctor_schedule/month")
+@router.get("/doctor/schedule/month")
 async def get_doctor_month_schedule_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -212,7 +217,7 @@ async def get_doctor_month_schedule_view(
     )
 
 
-@router.get("/doctors_count_by_profile")
+@router.get("/doctor/count_by_profile")
 async def get_doctors_count_by_profile_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -230,7 +235,7 @@ async def get_doctors_count_by_profile_view(
     )
 
 
-@router.get("/patients_home_visits")
+@router.get("/patient/home_visits")
 async def get_patients_home_visits_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
@@ -239,10 +244,66 @@ async def get_patients_home_visits_view(
     return template("/classic/query/patients_home_visits.html", {"patients": patients})
 
 
-@router.get("/doctors_home_visits_count")
+@router.get("/doctor/home_visits_count")
 async def get_doctors_home_visits_count_view(
     sql: QueryRunnerDep,
     template: TemplateContextDep,
 ):
     visits = get_doctors_home_visits_count(sql)
     return template("/classic/query/doctors_home_visits_count.html", {"visits": visits})
+
+
+@router.get("/procedure")
+async def get_procedures_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    procedures = get_procedures_list(sql)
+    return template("/classic/query/procedures.html", {"procedures": procedures})
+
+
+@router.get("/procedure/recent_count")
+async def get_recent_procedures_count_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    procedures = get_last_week_procedures_count(sql)
+    return template(
+        "/classic/query/procedures_recent_count.html", {"procedures": procedures}
+    )
+
+
+@router.get("/procedure/recent_patients")
+async def get_recent_procedures_patients_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    patients = get_last_week_procedures_patients(sql)
+    return template(
+        "/classic/query/procedures_recent_patients.html", {"patients": patients}
+    )
+
+
+@router.get("/procedure/fluorography")
+async def get_fluorography_patients_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+    date: Annotated[str | None, Query(description="Visit date")] = None,
+):
+    patients = get_fluorography_patients_by_date(sql, date)
+    return template(
+        "/classic/query/fluorography_patients.html",
+        {
+            "patients": patients,
+            "selected_date": date,
+        },
+    )
+
+
+@router.get("/vaccination/overdue")
+async def get_overdue_vaccinations_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    patients = get_overdue_vaccinations_patients(sql)
+    return template("/classic/query/overdue_vaccinations.html", {"patients": patients})

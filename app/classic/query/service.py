@@ -384,3 +384,101 @@ def get_doctors_home_visits_count(sql: SqlQueryRunner) -> list[dict]:
         GROUP BY doctor.id, doctor.last_name, doctor.first_name, doctor.patronymic
         ORDER BY home_visits_count DESC, doctor.last_name
     """).many_rows()
+
+
+def get_procedures_list(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT 
+            name as procedure_name,
+            COALESCE(description, 'Опис відсутній') as description
+        FROM procedure
+        ORDER BY name;
+    """).many_rows()
+
+
+def get_last_week_procedures_count(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT 
+            procedure.name as procedure_name,
+            COUNT(line_procedure.id) as procedures_count
+        FROM procedure
+        LEFT JOIN line_procedure ON procedure.id = line_procedure.procedure_id
+        LEFT JOIN visit ON line_procedure.visit_id = visit.id
+            AND visit.visit_date >= CURRENT_DATE - INTERVAL '7 days'
+            AND visit.visit_date <= CURRENT_DATE
+        GROUP BY procedure.id, procedure.name
+        ORDER BY procedures_count DESC, procedure.name;
+    """).many_rows()
+
+
+def get_last_week_procedures_patients(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT DISTINCT
+            patient.last_name || ' ' || 
+            LEFT(patient.first_name, 1) || '.' ||
+            CASE WHEN patient.patronymic IS NOT NULL 
+                THEN LEFT(patient.patronymic, 1) || '.'
+                ELSE ''
+            END AS patient_name
+        FROM patient
+        JOIN medical_history ON patient.id = medical_history.patient_id
+        JOIN visit ON medical_history.id = visit.medical_history_id
+        JOIN line_procedure ON visit.id = line_procedure.visit_id
+        WHERE visit.visit_date >= CURRENT_DATE - INTERVAL '7 days'
+            AND visit.visit_date <= CURRENT_DATE
+        ORDER BY patient_name;
+    """).many_rows()
+
+
+def get_fluorography_patients_by_date(
+    sql: SqlQueryRunner, date: str | None
+) -> list[dict]:
+    if not date:
+        return []
+
+    return (
+        sql.query("""
+        SELECT DISTINCT
+            patient.last_name || ' ' || 
+            LEFT(patient.first_name, 1) || '.' ||
+            CASE WHEN patient.patronymic IS NOT NULL 
+                THEN LEFT(patient.patronymic, 1) || '.'
+                ELSE ''
+            END AS patient_name,
+            patient.phone,
+            patient.address
+        FROM patient
+        JOIN medical_history ON patient.id = medical_history.patient_id
+        JOIN visit ON medical_history.id = visit.medical_history_id
+        JOIN line_procedure ON visit.id = line_procedure.visit_id
+        JOIN procedure ON line_procedure.procedure_id = procedure.id
+        WHERE procedure.name = 'Флюрографія'
+            AND visit.visit_date = :visit_date
+        ORDER BY patient_name;
+    """)
+        .bind(visit_date=date)
+        .many_rows()
+    )
+
+
+def get_overdue_vaccinations_patients(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT DISTINCT
+            patient.last_name || ' ' || 
+            LEFT(patient.first_name, 1) || '.' ||
+            CASE WHEN patient.patronymic IS NOT NULL 
+                THEN LEFT(patient.patronymic, 1) || '.'
+                ELSE ''
+            END AS patient_name,
+            patient.phone,
+            patient.address,
+            vaccination_type.name as vaccination_name,
+            vaccination.accept_until as due_date
+        FROM patient
+        JOIN medical_history ON patient.id = medical_history.patient_id
+        JOIN vaccination ON medical_history.id = vaccination.medical_history_id
+        JOIN vaccination_type ON vaccination.vaccination_type_id = vaccination_type.id
+        WHERE vaccination.completed_date IS NULL
+            AND vaccination.accept_until < CURRENT_DATE
+        ORDER BY due_date DESC, patient_name;
+    """).many_rows()

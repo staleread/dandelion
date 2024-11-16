@@ -18,11 +18,11 @@
 {% block table_actions %}
     <div class="flex flex-col gap-2 sm:flex-row">
         <div class="flex flex-wrap gap-1">
-            <a href="/classic/query/doctor_schedule/week{% if selected_doctor_id %}?doctor_id={{ selected_doctor_id }}{% endif %}" 
+            <a href="/classic/query/doctor/schedule/week{% if selected_doctor_id %}?doctor_id={{ selected_doctor_id }}{% endif %}" 
                class="btn btn-sm {% if period == 'week' %}btn-active{% endif %}">
                 На тиждень
             </a>
-            <a href="/classic/query/doctor_schedule/month{% if selected_doctor_id %}?doctor_id={{ selected_doctor_id }}{% endif %}" 
+            <a href="/classic/query/doctor/schedule/month{% if selected_doctor_id %}?doctor_id={{ selected_doctor_id }}{% endif %}" 
                class="btn btn-sm {% if period == 'month' %}btn-active{% endif %}">
                 На місяць
             </a>
