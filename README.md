@@ -64,17 +64,15 @@ docker compose up -d
 
 4. Execute the sql script generated in `db-init.sql`, in PgAdmin
 
-5. Generate owners hashed password:
+5. Generate a valid salt and hashed password with a script:
 
-```python
-import bcrypt
-
-salt = b'YOUR_SALT'
-password = b'YOUR_PASSWORD'
-
-hashed_password = bcrypt.hashpw(password, salt)
-print(hashed_password.decode())
+```bash
+./scripts/generate_password_hash.py
 ```
+
+> [!IMPORTANT]
+> Ensure you have `getpass` and `bcrypt` python libraries installed
+> either on system or in virtual environment
 
 6. Insert the owner user credentials into the DB:
 
