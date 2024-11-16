@@ -1,0 +1,27 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Кількість відвідувань за тиждень{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Кількість відвідувань за тиждень
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Лікар</th>
+    <th>Кількість відвідувань</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for visit in visits %}
+    <tr>
+        <td>{{ visit.doctor_name }}</td>
+        <td>{{ visit.visits_count }}</td>
+    </tr>
+    {% endfor %}
+{% endblock %} 
