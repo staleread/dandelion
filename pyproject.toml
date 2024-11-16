@@ -8,14 +8,15 @@ description = "Centralized system for a policlynic"
 requires-python = ">= 3.10"
 dependencies = [
   "fastapi[standard]",
+  "sqlalchemy",
   "psycopg",
   "psycopg[binary]",
-  "pugsql",
   "python-dotenv",
   "pydantic",
   "pydantic-settings",
   "pyjwt",
   "bcrypt",
+  "pdfkit",
 ]
 
 [project.optional-dependencies]
