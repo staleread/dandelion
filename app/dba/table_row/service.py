@@ -4,13 +4,24 @@ from app.common.database.utils import SqlRunner
 
 
 def get_table_rows(*, connection: Connection, table_title: str) -> list[dict]:
-    return (
-        SqlRunner(connection=connection)
-        .query(f"""
-            select * from "{table_title}"
-        """)
-        .many_rows()
+    sql = SqlRunner(connection=connection)
+
+    has_id = (
+        sql.query("""
+        SELECT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = :table_title AND column_name = 'id'
+        )
+    """)
+        .bind(table_title=table_title)
+        .scalar()
     )
+
+    query = f'SELECT * FROM "{table_title}"'
+    if has_id:
+        query += " ORDER BY id"
+
+    return sql.query(query).many_rows()
 
 
 def get_row_by_id(
