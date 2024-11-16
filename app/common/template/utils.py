@@ -3,14 +3,14 @@ from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from .core import templates
+from .core import web_templates
 
 
 def get_template_model_response(
     request: Request,
 ) -> Callable[[str, BaseModel], HTMLResponse]:
     def template_model_response(name: str, model: BaseModel) -> HTMLResponse:
-        return templates.TemplateResponse(
+        return web_templates.TemplateResponse(
             request, name=name, context=model.model_dump()
         )
 
@@ -25,7 +25,7 @@ TemplateModelDep = Annotated[
 
 def get_template_response(request: Request) -> Callable[[str, dict], HTMLResponse]:
     def template_response(name: str, context: dict) -> HTMLResponse:
-        return templates.TemplateResponse(request, name=name, context=context)
+        return web_templates.TemplateResponse(request, name=name, context=context)
 
     return template_response
 
