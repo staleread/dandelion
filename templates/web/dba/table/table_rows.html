@@ -17,7 +17,7 @@
 
 {% block table_header_row %}
     {% for attribute in attributes %}
-    <th class="group relative">
+    <th class="group relative max-w-[100px]">
         <div class="flex items-center gap-2">
             {% if attribute.is_primary %}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4" title="Primary Key">
@@ -49,7 +49,7 @@
                 {% if attribute.data_type == 'json' %}
                     <kbd class="kbd kbd-sm whitespace-pre-wrap break-all p-2">{{ row[attribute.name] }}</kbd>
                 {% else %}
-                    {{ row[attribute.name] }}
+                    <p class="whitespace-pre-wrap break-all max-w-[200px]">{{ row[attribute.name] }}</p>
                 {% endif %}
             </td>
         {% endfor %}

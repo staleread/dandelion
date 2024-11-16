@@ -40,7 +40,7 @@
     {% for attribute in rich_attributes %}
         <tr class="hover">
             <td>{{ attribute.name }}</td>
-            <td>{{ attribute.data_type }}</td>
+            <td><kbd class="kbd kbd-sm">{{ attribute.data_type }}</kbd></td>
             <td>
                 {% if attribute.is_primary %}
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-success">
