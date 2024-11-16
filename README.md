@@ -1,5 +1,7 @@
 # dandelion
 
+<img src="https://images.vexels.com/content/244182/preview/dandelion-flower-color-stroke-18bf94.png" alt="Dandelion flower" width="100" />
+
 The purpose of this project is to create a centralized system
 (from now - System) for managing data of a policlynic
 
@@ -67,7 +69,7 @@ docker compose up -d
 5. Generate a valid salt and hashed password with a script:
 
 ```bash
-./scripts/generate_password_hash.py
+python scripts/generate_password_hash.py
 ```
 
 > [!IMPORTANT]
@@ -101,23 +103,9 @@ docker compose down -v
 
 -  Get therapists schedules
 
-> [!NOTE]
-> A doctor's schedule must include
->   1. day of week (in Ukrainian)
->   2. start hour
->   3. end hour
->   4. room number
->   5. room type name
-
 #### 2. Doctor's overview
 
 -  Get Doctors' overview
-
-> [!NOTE]
-> A doctor's overview consists of
->   1. personal info
->   2. unique list of certificate types ever given
->   3. amount of patients, examined during this week
 
 #### 3. Filter patients
 
