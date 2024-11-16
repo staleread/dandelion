@@ -1,14 +1,14 @@
 {% extends "base/page.html" %}
 
 {% block page_content %}
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
     <div class="flex items-center gap-2">
         {% block table_icon %}{% endblock %}
         <h1 class="text-2xl font-semibold">
             {% block table_title %}{% endblock %}
         </h1>
     </div>
-    <div class="flex justify-end gap-2">
+    <div class="w-full sm:w-auto">
         {% block table_actions %}{% endblock %}
     </div>
 </div>
