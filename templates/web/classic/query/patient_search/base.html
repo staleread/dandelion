@@ -1,0 +1,66 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Пошук пацієнтів{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Пошук пацієнтів
+{% endblock %}
+
+{% block table_actions %}
+    <div class="flex flex-col gap-2 sm:flex-row">
+        <div class="flex flex-wrap gap-1">
+            <a href="/classic/query/patient/search/by_last_name" 
+               class="btn btn-sm {% if filter_type == 'last_name' %}btn-active{% endif %}">
+                За прізвищем
+            </a>
+            <a href="/classic/query/patient/search/by_history" 
+               class="btn btn-sm {% if filter_type == 'history_id' %}btn-active{% endif %}">
+                За номером історії
+            </a>
+            <a href="/classic/query/patient/search/by_health" 
+               class="btn btn-sm {% if filter_type == 'health_state' %}btn-active{% endif %}">
+                За станом здоров'я
+            </a>
+            <a href="/classic/query/patient/search/by_therapist" 
+               class="btn btn-sm {% if filter_type == 'therapist' %}btn-active{% endif %}">
+                За терапевтом
+            </a>
+        </div>
+        <form method="get" class="join w-full sm:w-auto">
+            <input type="text" name="query" 
+                   placeholder="{% block search_placeholder %}{% endblock %}" 
+                   class="input input-sm input-bordered join-item flex-1" 
+                   value="{{ search_query }}">
+            <button type="submit" class="btn btn-primary btn-sm join-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                    <path d="M6.5 1a5.5 5.5 0 0 1 4.383 8.823l3.896 3.896a.75.75 0 0 1-1.06 1.06l-3.896-3.896A5.5 5.5 0 1 1 6.5 1Zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+                </svg>
+            </button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Пацієнт</th>
+    <th>Номер історії</th>
+    <th>Стан здоров'я</th>
+    <th>Терапевт</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for patient in patients %}
+    <tr>
+        <td>{{ patient.patient_name }}</td>
+        <td>{{ patient.history_id }}</td>
+        <td>{{ patient.health_state }}</td>
+        <td>{{ patient.therapist_name }}</td>
+    </tr>
+    {% endfor %}
+{% endblock %} 

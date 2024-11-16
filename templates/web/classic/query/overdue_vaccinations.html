@@ -1,0 +1,43 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Пропущені щеплення{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18"></path>
+        <path d="M4 7v7c0 4 3 7 7 7 2.3 0 4.3-1 5.7-2.6"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Пацієнти з пропущеними щепленнями
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Пацієнт</th>
+    <th>Телефон</th>
+    <th>Адреса</th>
+    <th>Щеплення</th>
+    <th>Термін до</th>
+{% endblock %}
+
+{% block table_body %}
+    {% if patients %}
+        {% for patient in patients %}
+        <tr>
+            <td>{{ patient.patient_name }}</td>
+            <td>{{ patient.phone or '—' }}</td>
+            <td>{{ patient.address or '—' }}</td>
+            <td>{{ patient.vaccination_name }}</td>
+            <td>{{ patient.due_date.strftime('%d.%m.%Y') }}</td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="5" class="text-center">
+                Пацієнтів з пропущеними щепленнями не знайдено
+            </td>
+        </tr>
+    {% endif %}
+{% endblock %} 

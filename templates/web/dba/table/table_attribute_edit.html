@@ -1,0 +1,47 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Редагування атрибута{% endblock %}
+{% block form_title %}Редагування атрибута{% endblock %}
+{% block form_action %}/dba/table/{{ table.id }}/attribute/{{ attribute.id }}/edit{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/dba/table">Таблиці</a></li>
+    <li><a href="/dba/table/{{ table.id }}/attribute">Атрибути таблиці '{{ table.title }}'</a></li>
+    <li>Редагування атрибута '{{ attribute.name }}'</li>
+{% endblock %}
+
+{% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-80 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
+<input type="hidden" name="table_id" value="{{ table.id }}">
+<input type="hidden" name="attribute_id" value="{{ attribute.id }}">
+<div class="form-control">
+    <label for="name">Назва атрибута</label>
+    <input type="text" class="input input-bordered" id="name" name="name" required
+        value="{{ name }}"
+        placeholder="e.g. name"
+    >
+</div>
+<div class="form-control">
+    <label for="ukr_name">Назва атрибута українською</label>
+    <input type="text" class="input input-bordered" id="ukr_name" name="ukr_name" required
+        value="{{ ukr_name }}"
+        placeholder="e.g. Ім'я"
+    >
+</div>
+{% endblock %}
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/dba/table/{{ table.id }}/attribute" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Зберегти</button>
+</div>
+{% endblock %} 

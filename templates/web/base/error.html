@@ -1,0 +1,24 @@
+{% extends "base/base.html" %}
+{% block title -%}
+  {% block status_code %}{% endblock %} - {% block detail %}{% endblock %}
+{% endblock %}
+{% block content %}
+  <div class="hero bg-base-200 min-h-screen">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h1 class="text-5xl font-bold">
+          {{ self.status_code() }} - {{ self.detail() }}
+        </h1>
+        <p class="py-6">{% block message %}{% endblock %}</p>
+        <div class="flex flex-row justify-center gap-2">
+          <a href="/" class="flex-1 btn btn-primary">
+            Повернутися до Classic
+          </a>
+          <a href="/db" class="flex-1 btn btn-primary">
+            Повернутися до DB
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

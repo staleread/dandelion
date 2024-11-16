@@ -1,0 +1,102 @@
+<ul>
+    <!-- Domain Queries -->
+    <li>
+        <a href="/classic/query/therapist/schedule">Розклад терапевтів</a>
+    </li>
+    <li>
+        <details>
+            <summary>Огляд лікарів</summary>
+            <ul>
+                <li><a href="/classic/query/doctor/overview">Інформація про лікарів</a></li>
+                <li><a href="/classic/query/document/given">Видані документи</a></li>
+                <li><a href="/classic/query/doctor/visits_per_week">Кількість відвідувань за тиждень</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <a href="/classic/query/patient/search/by_last_name">Пошук пацієнтів</a>
+    </li>
+    <li>
+        <details>
+            <summary>Статистика пацієнтів</summary>
+            <ul>
+                <li><a href="/classic/query/patient/multiple_doctors">Пацієнти з візитами різних лікарів</a></li>
+                <li><a href="/classic/query/patient/angina_patients_count">Хворі на ангіну за останній місяць</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <details>
+            <summary>Статистика лікарів</summary>
+            <ul>
+                <li><a href="/classic/query/doctor/schedule/week">Графік роботи лікаря</a></li>
+                <li><a href="/classic/query/doctor/count_by_profile">Лікарі за спеціальністю</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <details>
+            <summary>Виклики додому</summary>
+            <ul>
+                <li><a href="/classic/query/patient/home_visits">Пацієнти з викликами додому</a></li>
+                <li><a href="/classic/query/doctor/home_visits_count">Домашні виклики за лікарями</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <details>
+            <summary>Процедури</summary>
+            <ul>
+                <li><a href="/classic/query/procedure">Перелік процедур</a></li>
+                <li><a href="/classic/query/procedure/recent_count">Кількість процедур за тиждень</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <details>
+            <summary>Процедури та щеплення</summary>
+            <ul>
+                <li><a href="/classic/query/procedure/fluorography">Пацієнти на флюрографію</a></li>
+                <li><a href="/classic/query/vaccination/overdue">Пропущені щеплення</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <details>
+            <summary>Фізіотерапія</summary>
+            <ul>
+                <li><a href="/classic/query/rooms/physiotherapy">Фізіотерапевтичні кабінети</a></li>
+                <li><a href="/classic/query/rooms/physiotherapy/schedule">Розклад фіз. кабінетів</a></li>
+                <li><a href="/classic/query/rooms/doctors_count">Кількість лікарів по кабінетах</a></li>
+            </ul>
+        </details>
+    </li>
+    <li>
+        <details>
+            <summary>Статистика відвідувань</summary>
+            <ul>
+                <li><a href="/classic/query/visit/clinic_count">Відвідування клініки за місяць</a></li>
+                <li><a href="/classic/query/visit/profile_count">Відвідування за спеціальностями</a></li>
+            </ul>
+        </details>
+    </li>
+    
+    <div class="divider m-0"></div>
+    
+    <!-- Domain Commands -->
+    <li>
+        <a href="/classic/command/document">Видати документ</a>
+    </li>
+    
+    <div class="divider m-0"></div>
+    
+    <!-- DB Admin Link -->
+    <li>
+        <a href="/dba">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                <path fill-rule="evenodd" d="M10 1c3.866 0 7 1.79 7 4s-3.134 4-7 4-7-1.79-7-4 3.134-4 7-4Zm5.694 8.13c.464-.264.91-.583 1.306-.952V10c0 2.21-3.134 4-7 4s-7-1.79-7-4V8.178c.396.37.842.688 1.306.953C5.838 10.006 7.854 10.5 10 10.5s4.162-.494 5.694-1.37ZM3 13.179V15c0 2.21 3.134 4 7 4s7-1.79 7-4v-1.822c-.396.37-.842.688-1.306.953-1.532.875-3.548 1.369-5.694 1.369s-4.162-.494-5.694-1.37A7.009 7.009 0 0 1 3 13.179Z" clip-rule="evenodd"/>
+            </svg>
+            dandelion-db
+        </a>
+    </li>
+</ul>

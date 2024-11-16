@@ -1,0 +1,49 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Нова таблиця{% endblock %}
+{% block form_title %}Нова таблиця{% endblock %}
+{% block form_action %}/dba/table/new{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/dba/table">Таблиці</a></li>
+    <li>Створення нової таблиці</li>
+{% endblock %}
+
+{% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-80 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
+<div class="form-control">
+    <label for="title">Назва таблиці</label>
+    <input type="text" class="input input-bordered" id="title" name="title" required
+        value="{{ title }}"
+        placeholder="e.g. patient"
+    >
+</div>
+<label class="cursor-pointer label">
+    <span class="label-text">Приватна</span>
+    <input type="checkbox" class="toggle" id="is_private" name="is_private"
+        {% if is_private %}checked{% endif %}
+    >
+</label>
+<label class="cursor-pointer label">
+    <span class="label-text">Захищена</span>
+    <input type="checkbox" class="toggle" id="is_protected" name="is_protected"
+        {% if is_protected %}checked{% endif %}
+    >
+</label>
+{% endblock %}
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/dba/table" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Створити</button>
+</div>
+{% endblock %}

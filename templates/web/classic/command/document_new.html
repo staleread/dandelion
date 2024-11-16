@@ -1,0 +1,71 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Новий документ{% endblock %}
+{% block form_title %}Новий документ{% endblock %}
+{% block form_action %}/classic/command/document/{{ document_id }}/create{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/classic/command/document">Видача документів</a></li>
+    <li>Створення нового документу</li>
+{% endblock %}
+
+{% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-80 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
+<fieldset class="mb-6">
+    <legend class="text-lg font-semibold mb-4">Інформація про документ</legend>
+    
+    <div class="form-control">
+        <label class="label">
+            Номер візиту*
+        </label>
+        <input type="number"
+               name="visit_id"
+               required
+               class="input input-bordered w-full">
+    </div>
+
+    <div class="form-control">
+        <label class="label">
+            Дата видачі*
+        </label>
+        <input type="date"
+               name="issue_date"
+               required
+               class="input input-bordered w-full">
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend class="text-lg font-semibold mb-4">Зміст документу</legend>
+    
+    {% for field_name, field_description in document_fields.items() %}
+        {% if field_name not in ['issue_date'] %}
+        <div class="form-control">
+            <label class="label">
+                {{ field_description }}*
+            </label>
+            <input type="text"
+                   name="{{ field_name }}"
+                   required
+                   class="input input-bordered w-full">
+        </div>
+        {% endif %}
+    {% endfor %}
+</fieldset>
+{% endblock %}
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/classic/command/document" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Створити</button>
+</div>
+{% endblock %}

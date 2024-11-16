@@ -1,0 +1,36 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Інформація про лікарів{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Інформація про лікарів
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Прізвище</th>
+    <th>Ім'я</th>
+    <th>По батькові</th>
+    <th>Спеціальність</th>
+    <th>Телефон</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for doctor in doctors %}
+    <tr>
+        <td>{{ doctor.last_name }}</td>
+        <td>{{ doctor.first_name }}</td>
+        <td>{{ doctor.patronymic }}</td>
+        <td>{{ doctor.profile_name }}</td>
+        <td>{{ doctor.phone }}</td>
+    </tr>
+    {% endfor %}
+{% endblock %}

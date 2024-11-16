@@ -1,0 +1,35 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Статистика процедур{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Кількість процедур за останні 7 днів
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Назва процедури</th>
+    <th>Кількість</th>
+{% endblock %}
+
+{% block table_body %}
+    {% if procedures %}
+        {% for procedure in procedures %}
+        <tr>
+            <td>{{ procedure.procedure_name }}</td>
+            <td class="text-center">{{ procedure.procedures_count }}</td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="2" class="text-center">
+                Процедури не знайдено
+            </td>
+        </tr>
+    {% endif %}
+{% endblock %} 

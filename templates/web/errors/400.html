@@ -1,0 +1,6 @@
+{% extends "base/error.html" %}
+{% block status_code %}400{% endblock %}
+{% block detail %}Некоректний запит{% endblock %}
+{% block message %}
+  Сервер не може обробити ваш запит через некоректний синтаксис
+{% endblock %}

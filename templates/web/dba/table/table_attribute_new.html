@@ -1,0 +1,78 @@
+{% extends "base/page_form.html" %}
+
+{% block title_page %}Новий атрибут{% endblock %}
+{% block form_title %}Новий атрибут{% endblock %}
+{% block form_action %}/dba/table/{{ table.id }}/attribute/new{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/dba/table">Таблиці</a></li>
+    <li><a href="/dba/table/{{ table.id }}/attribute">Атрибути таблиці '{{ table.title }}'</a></li>
+    <li>Створення нового атрибута</li>
+{% endblock %}
+
+{% block form_content %}
+{% if error %}
+<div class="toast toast-top toast-center">
+    <div class="alert alert-error w-80 flex justify-center">
+        <span class="text-wrap text-center">{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
+<input type="hidden" name="table_id" value="{{ table.id }}">
+<div class="form-control">
+    <label for="name">Назва атрибута</label>
+    <input type="text" class="input input-bordered" id="name" name="name" required
+        value="{{ name }}"
+        placeholder="e.g. name"
+    >
+</div>
+<div class="form-control">
+    <label for="ukr_name">Назва атрибута українською</label>
+    <input type="text" class="input input-bordered" id="ukr_name" name="ukr_name" required
+        value="{{ ukr_name }}"
+        placeholder="e.g. Ім'я"
+    >
+</div>
+<div class="form-control">
+    <label for="data_type_id">Тип атрибута</label>
+    <select class="select select-bordered" id="data_type_id" name="data_type_id" required>
+        {% for data_type in data_types %}
+            <option value="{{ data_type.id }}" {% if data_type.id == data_type_id %}selected{% endif %}>
+                {{ data_type.name }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+<div class="form-control">
+    <label class="label cursor-pointer">
+        <span class="label-text">Унікальне значення</span>
+        <input type="checkbox" class="checkbox" name="is_unique" {% if is_unique %}checked{% endif %}>
+    </label>
+</div>
+<div class="form-control">
+    <label class="label cursor-pointer">
+        <span class="label-text">Може бути NULL</span>
+        <input type="checkbox" class="checkbox" name="is_nullable" {% if is_nullable %}checked{% endif %}>
+    </label>
+</div>
+<div class="form-control">
+    <label for="constraint_pattern">Обмеження значень</label>
+    <input type="text" class="input input-bordered" id="constraint_pattern" name="constraint_pattern"
+        value="{{ constraint_pattern if constraint_pattern else '' }}"
+        placeholder="e.g. between 1 and 7 or in (1, 2)"
+    >
+    <label class="label">
+        <span class="label-text-alt">Підтримуються шаблони "between X and Y" та "in (X, Y, ...)" для цілих чисел</span>
+    </label>
+</div>
+{% endblock %}
+
+{% block form_buttons %}
+<div class="form-control mt-4 flex-1">
+    <a href="/db/tables/{{ table.id }}/attributes" class="btn btn-secondary">Скасувати</a>
+</div>
+<div class="form-control mt-4 flex-1">
+    <button type="submit" class="btn btn-primary">Створити</button>
+</div>
+{% endblock %}

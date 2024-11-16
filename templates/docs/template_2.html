@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: "Times New Roman", serif;
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .clinic-name {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .document-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .content {
+            margin: 20px 0;
+        }
+        .field {
+            margin-bottom: 15px;
+        }
+        .field-label {
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #000;
+            padding-top: 20px;
+        }
+        .signature-line {
+            margin-top: 30px;
+            display: inline-block;
+            border-bottom: 1px solid #000;
+            width: 200px;
+            text-align: center;
+        }
+        .stamp-place {
+            margin-top: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="clinic-name">{{ document_data.institution_title }}</div>
+    </div>
+
+    <div class="document-title">
+        Сертифікат про вакцинацію
+    </div>
+    
+    <div class="content">
+        <div class="field">
+            <span class="field-label">Пацієнт:</span>
+            <span>{{ document_data.patient_full_name }}</span>
+        </div>
+
+        <div class="field">
+            <span class="field-label">Вакцина:</span>
+            <span>{{ document_data.vaccination_type }}</span>
+        </div>
+
+        <div class="field">
+            <span class="field-label">Дата вакцинації:</span>
+            <span>{{ document_data.vaccination_date }}</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="field">
+            <span class="field-label">Дата видачі:</span>
+            <span>{{ document_data.issue_date }}</span>
+        </div>
+
+        <div class="field">
+            <span class="field-label">Лікуючий лікар:</span>
+            <span>{{ document_data.doctor_full_name }}</span>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <div style="float: left;">
+                <div>Підпис лікаря</div>
+                <div class="signature-line">&nbsp;</div>
+            </div>
+            
+            <div style="float: right; text-align: center;">
+                <div class="stamp-place">М.П.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
