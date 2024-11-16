@@ -37,7 +37,7 @@ class SqlQueryRunner:
         row = self.connection.execute(text(self.sql), self.kwargs).one()
         return map_row(dict(row._mapping))
 
-    def one_row(self) -> dict | None:
+    def one_row(self) -> dict:
         return self.one(lambda x: x)
 
     def many(self, map_row: Callable[[dict], T]) -> list[T]:

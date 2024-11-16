@@ -1,0 +1,77 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Графік роботи лікаря{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Графік роботи лікаря
+{% endblock %}
+
+{% block table_actions %}
+    <div class="flex flex-col gap-2 sm:flex-row">
+        <div class="flex flex-wrap gap-1">
+            <a href="/classic/query/doctor_schedule/week{% if selected_doctor_id %}?doctor_id={{ selected_doctor_id }}{% endif %}" 
+               class="btn btn-sm {% if period == 'week' %}btn-active{% endif %}">
+                На тиждень
+            </a>
+            <a href="/classic/query/doctor_schedule/month{% if selected_doctor_id %}?doctor_id={{ selected_doctor_id }}{% endif %}" 
+               class="btn btn-sm {% if period == 'month' %}btn-active{% endif %}">
+                На місяць
+            </a>
+        </div>
+        <form method="get" class="join w-full sm:w-auto">
+            <div class="form-control">
+                <select name="doctor_id" class="select select-bordered select-sm w-full" onchange="this.form.submit()" required>
+                    <option disabled selected value="">Оберіть лікаря...</option>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}" {% if selected_doctor_id == doctor.id %}selected{% endif %}>
+                        {{ doctor.doctor_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Дата</th>
+    <th>Кабінет</th>
+    <th>Початок зміни</th>
+    <th>Кінець зміни</th>
+{% endblock %}
+
+{% block table_body %}
+    {% if selected_doctor_id %}
+        {% if schedule %}
+            {% for shift in schedule %}
+            <tr>
+                <td>{{ shift.shift_date }}</td>
+                <td>{{ shift.room_number }}</td>
+                <td>{{ shift.start_hour }}</td>
+                <td>{{ shift.end_hour }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4" class="text-center">
+                    На обраний період графік відсутній
+                </td>
+            </tr>
+        {% endif %}
+    {% else %}
+        <tr>
+            <td colspan="4" class="text-center">
+                Оберіть лікаря для перегляду графіку
+            </td>
+        </tr>
+    {% endif %}
+{% endblock %} 

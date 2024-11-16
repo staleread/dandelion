@@ -1,0 +1,23 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Статистика захворювань на ангіну{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Кількість хворих на ангіну за останній місяць
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Кількість пацієнтів</th>
+{% endblock %}
+
+{% block table_body %}
+    <tr>
+        <td>{{ patients_count }}</td>
+    </tr>
+{% endblock %} 

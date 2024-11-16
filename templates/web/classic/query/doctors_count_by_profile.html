@@ -1,0 +1,51 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Кількість лікарів за спеціальністю{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Кількість лікарів за спеціальністю
+{% endblock %}
+
+{% block table_actions %}
+    <div class="flex flex-col gap-2 sm:flex-row">
+        <form method="get" class="join w-full sm:w-auto">
+            <div class="form-control">
+                <select name="profile_id" class="select select-bordered select-sm w-full" onchange="this.form.submit()" required>
+                    <option disabled selected value="">Оберіть спеціальність...</option>
+                    {% for profile in profile_types %}
+                    <option value="{{ profile.id }}" {% if selected_profile_id == profile.id %}selected{% endif %}>
+                        {{ profile.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Кількість лікарів</th>
+{% endblock %}
+
+{% block table_body %}
+    {% if selected_profile_id %}
+        <tr>
+            <td>{{ doctors_count }}</td>
+        </tr>
+    {% else %}
+        <tr>
+            <td>
+                Оберіть спеціальність для перегляду кількості лікарів
+            </td>
+        </tr>
+    {% endif %}
+{% endblock %} 
