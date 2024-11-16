@@ -482,3 +482,56 @@ def get_overdue_vaccinations_patients(sql: SqlQueryRunner) -> list[dict]:
             AND vaccination.accept_until < CURRENT_DATE
         ORDER BY due_date DESC, patient_name;
     """).many_rows()
+
+
+def get_physiotherapy_rooms(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT 
+            room.room_number
+        FROM room
+        JOIN room_type ON room.room_type_id = room_type.id
+        WHERE room_type.name = 'Фізіотерапевтичний'
+        ORDER BY room.room_number;
+    """).many_rows()
+
+
+def get_physiotherapy_rooms_schedule(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT 
+            CASE schedule_shift.day_of_week 
+                WHEN 1 THEN 'Понеділок'
+                WHEN 2 THEN 'Вівторок'
+                WHEN 3 THEN 'Середа'
+                WHEN 4 THEN 'Четвер'
+                WHEN 5 THEN 'П''ятниця'
+                WHEN 6 THEN 'Субота'
+                WHEN 7 THEN 'Неділя'
+            END AS day_of_week,
+            room.room_number,
+            to_char(schedule_shift.start_time, 'HH24:MI') as start_time,
+            to_char(schedule_shift.end_time, 'HH24:MI') as end_time
+        FROM schedule_entry
+        JOIN room ON schedule_entry.room_id = room.id
+        JOIN room_type ON room.room_type_id = room_type.id
+        JOIN schedule_shift ON schedule_entry.shift_id = schedule_shift.id
+        WHERE room_type.name = 'Фізіотерапевтичний'
+        ORDER BY 
+            schedule_shift.day_of_week,
+            room.room_number,
+            schedule_shift.start_time;
+    """).many_rows()
+
+
+def get_doctors_count_by_room(sql: SqlQueryRunner) -> list[dict]:
+    """Get count of unique doctors working in each room during the week."""
+    return sql.query("""
+        SELECT 
+            room.room_number,
+            room_type.name as room_type_name,
+            COUNT(DISTINCT schedule_entry.doctor_id) as doctors_count
+        FROM room
+        JOIN room_type ON room.room_type_id = room_type.id
+        LEFT JOIN schedule_entry ON room.id = schedule_entry.room_id
+        GROUP BY room.id, room.room_number, room_type.name
+        ORDER BY room.room_number;
+    """).many_rows()

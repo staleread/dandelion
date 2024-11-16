@@ -1,0 +1,38 @@
+{% extends "base/page_table.html" %}
+
+{% block title_page %}Кількість лікарів по кабінетах{% endblock %}
+
+{% block table_icon %}
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+{% endblock %}
+
+{% block table_title %}
+    Кількість лікарів, що працюють у кожному кабінеті
+{% endblock %}
+
+{% block table_header_row %}
+    <th>Номер кабінету</th>
+    <th>Тип кабінету</th>
+    <th>Кількість лікарів</th>
+{% endblock %}
+
+{% block table_body %}
+    {% if counts %}
+        {% for count in counts %}
+        <tr>
+            <td>{{ count.room_number }}</td>
+            <td>{{ count.room_type_name }}</td>
+            <td>{{ count.doctors_count }}</td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3" class="text-center">
+                Дані про кабінети не знайдено
+            </td>
+        </tr>
+    {% endif %}
+{% endblock %} 

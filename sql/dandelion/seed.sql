@@ -195,7 +195,8 @@ insert into doctor_profile_type (name) values
     (N'Педіатр'),
     (N'Невролог'),
     (N'Кардіолог'),
-    (N'Офтальмолог');
+    (N'Офтальмолог'),
+    (N'Фізіотерапевт');
 
 insert into room_type (name) values
     (N'Кабінет сімейного лікаря'),
@@ -223,7 +224,10 @@ insert into doctor (first_name, last_name, patronymic, profile_id, phone) values
     (N'Наталія', N'Ткаченко', N'Миколаївна', 5, '+380975678901'),
     (N'Василь', N'Петренко', N'Андрійович', 6, '+380966789012'),
     (N'Тетяна', N'Лисенко', N'Сергіївна', 1, '+380987890123'),
-    (N'Сергій', N'Марченко', N'Володимирович', 2, '+380998901234');
+    (N'Сергій', N'Марченко', N'Володимирович', 2, '+380998901234'),
+    (N'Ірина', N'Фізенко', N'Михайлівна', 7, '+380991234567'),
+    (N'Олег', N'Терапенко', N'Васильович', 7, '+380992345678'),
+    (N'Марина', N'Лікувальна', N'Петрівна', 7, '+380993456789');
 
 insert into room (room_number, room_type_id) values
     (N'101-А', 1),
@@ -234,6 +238,9 @@ insert into room (room_number, room_type_id) values
     (N'301-В', 3),
     (N'302-В', 3),
     (N'401-Г', 4),
+    (N'402-Г', 4),
+    (N'403-Г', 4),
+    (N'404-Г', 4),
     (N'501-Д', 5),
     (N'502-Д', 5);
 
@@ -318,7 +325,28 @@ insert into schedule_entry (doctor_id, room_id, shift_id) values
     (8, 7, 3),  -- Tuesday morning
     (8, 7, 6),  -- Wednesday afternoon
     (8, 7, 10), -- Friday afternoon
-    (8, 7, 11); -- Saturday morning
+    (8, 7, 11), -- Saturday morning
+
+    -- Ірина Фізенко (Фізіотерапевт, id=9)
+    (9, 4, 1),  -- Monday morning
+    (9, 4, 4),  -- Tuesday afternoon
+    (9, 4, 5),  -- Wednesday morning
+    (9, 4, 8),  -- Thursday afternoon
+    (9, 4, 9),  -- Friday morning
+    (9, 4, 12), -- Saturday afternoon
+
+    -- Олег Терапенко (Фізіотерапевт, id=10)
+    (10, 4, 2),  -- Monday afternoon
+    (10, 4, 3),  -- Tuesday morning
+    (10, 4, 6),  -- Wednesday afternoon
+    (10, 4, 7),  -- Thursday morning
+    (10, 4, 10), -- Friday afternoon
+    (10, 4, 14), -- Sunday afternoon
+
+    -- Марина Лікувальна (Фізіотерапевт, id=11)
+    (11, 4, 7),  -- Thursday morning
+    (11, 4, 10), -- Friday afternoon
+    (11, 4, 11); -- Saturday morning
 
 insert into patient (first_name, last_name, patronymic, birth_date, address, phone) values
     (N'Марія', N'Іваненко', N'Олександрівна', '1985-03-15', N'вул. Шевченка 45, кв. 12', '+380501112233'),
