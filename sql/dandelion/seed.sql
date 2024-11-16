@@ -518,12 +518,13 @@ insert into line_procedure (visit_id, procedure_id, room_id) values
     ((select max(id) from visit), (select id from procedure where name = N'Флюрографія'), 5);
 
 insert into document_type (name, description, template) values
-    (N'Листок непрацездатності', N'дає право на звільнення від роботи у зв’язку з непрацездатністю та призначення матеріального забезпечення застрахованій особі в разі тимчасової непрацездатності, вагітності та пологів', '{"patient_full_name": "ПІБ пацієнта", "doctor_full_name": "ПІБ лікаря", "diagnosis": "Назва захворювання", "start_date": "Дата початку непрацездатності", "end_date": "Дата закінчення непрацездатності", "issue_date": "Дата видачі листка"}'),
-    (N'Сертифікат про вакцинацію', N'підтверджує факт вакцинації від інфекційних захворювань', '{"patient_full_name": "ПІБ пацієнта", "vaccination_date": "Дата вакцинації", "vaccination_type": "Назва вакцини", "doctor_full_name": "ПІБ лікаря", "issue_date": "Дата видачі сертифіката"}');
+    (N'Листок непрацездатності', N'дає право на звільнення від роботи у зв’язку з непрацездатністю та призначення матеріального забезпечення застрахованій особі в разі тимчасової непрацездатності, вагітності та пологів', '{"institution_title": "Назва медичного закладу", "patient_full_name": "ПІБ пацієнта", "doctor_full_name": "ПІБ лікаря", "diagnosis": "Назва захворювання", "start_date": "Дата початку непрацездатності", "end_date": "Дата закінчення непрацездатності", "issue_date": "Дата видачі листка"}'),
+    (N'Сертифікат про вакцинацію', N'підтверджує факт вакцинації від інфекційних захворювань', '{"institution_title": "Назва медичного закладу", "patient_full_name": "ПІБ пацієнта", "vaccination_date": "Дата вакцинації", "vaccination_type": "Назва вакцини", "doctor_full_name": "ПІБ лікаря", "issue_date": "Дата видачі сертифіката"}');
 
 insert into document (visit_id, document_type_id, data) values
     -- Sick leaves for angina cases
     (1, 1, '{
+        "institution_title": "Dandelion Clinic",
         "patient_full_name": "Іваненко Марія Олександрівна",
         "doctor_full_name": "Коваленко Олена Петрівна",
         "diagnosis": "Ангіна",
@@ -533,6 +534,7 @@ insert into document (visit_id, document_type_id, data) values
     }'::json),
     
     (6, 1, '{
+        "institution_title": "Dandelion Clinic",
         "patient_full_name": "Даниленко Максим Олегович",
         "doctor_full_name": "Коваленко Олена Петрівна",
         "diagnosis": "Ангіна",
@@ -543,6 +545,7 @@ insert into document (visit_id, document_type_id, data) values
     
     -- Sick leave for appendicitis (longer period)
     (14, 1, '{
+        "institution_title": "Dandelion Clinic",
         "patient_full_name": "Поліщук Андрій Степанович",
         "doctor_full_name": "Шевченко Михайло Іванович",
         "diagnosis": "Апендицит",
@@ -553,6 +556,7 @@ insert into document (visit_id, document_type_id, data) values
     
     -- Sick leave for pneumonia
     (16, 1, '{
+        "institution_title": "Dandelion Clinic",
         "patient_full_name": "Іваненко Марія Олександрівна",
         "doctor_full_name": "Лисенко Тетяна Сергіївна",
         "diagnosis": "Пневмонія",
@@ -563,6 +567,7 @@ insert into document (visit_id, document_type_id, data) values
     
     -- Vaccination certificates
     (3, 2, '{
+        "institution_title": "Dandelion Clinic",
         "patient_full_name": "Григоренко Софія Андріївна",
         "vaccination_date": "2024-10-06",
         "vaccination_type": "Коронавірус",
