@@ -29,10 +29,11 @@ Due to the System complexity, it'll be logically divided into 2 subdomains:
 
 > [!NOTE]
 > A doctor's schedule must include
->   1. day of week
+>   1. day of week (in Ukrainian)
 >   2. start hour
 >   3. end hour
 >   4. room number
+>   5. room type name
 
 #### 2. Doctor's overview
 
