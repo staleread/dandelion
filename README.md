@@ -21,6 +21,82 @@ Due to the System complexity, it'll be logically divided into 2 subdomains:
 - dandelion-classic - for running domain queries and commands
 - dandelion-db - for DB administration
 
+## Launch with Docker
+
+> [!IMPORTANT]
+> Ensure that Docker is installed and running
+
+### Environment Setup
+
+Before launching the project, create a `.env` file in the root directory with the following variables:
+
+> [!NOTE]
+> Required environment variables:
+> ```env
+> JWT_SECRET=your_secure_jwt_secret
+> JWT_ALGORITHM=HS256
+> JWT_LIFETIME=700
+> HASH_SALT=your_secure_salt
+> COOKIE_NAME=id_token
+> DB_USER=your_db_username
+> DB_PASS=your_db_password
+> DB_HOST=db:5432
+> DB_NAME=dandelion-db
+> ```
+
+### Launch Steps
+
+1. Build and start the containers:
+
+```bash
+docker compose up -d
+```
+
+2. Generate initial DB data
+
+```bash
+./scripts/gen-db-init.sh
+```
+
+3. Login to the PgAdmin using credentials:
+- Email: admin@gmail.com
+- Password: 123
+
+4. Execute the sql script generated in `db-init.sql`, in PgAdmin
+
+5. Generate owners hashed password:
+
+```python
+import bcrypt
+
+salt = b'YOUR_SALT'
+password = b'YOUR_PASSWORD'
+
+hashed_password = bcrypt.hashpw(password, salt)
+print(hashed_password.decode())
+```
+
+6. Insert the owner user credentials into the DB:
+
+```sql
+insert into "user" (username, hashed_password, role_id)
+values ('YOUR_USERNAME', 'YOUR_HASHED_PASSWORD', 4)
+```
+
+Now you can use the username and password to login to the System
+
+### Stopping the Project
+
+To stop all containers:
+```bash
+docker compose down
+```
+
+To stop and remove all data (including database volume):
+```bash
+docker compose down -v
+```
+
 ## Dandelion Classic
 ### Domain Queries
 #### 1. Therapists schedules
