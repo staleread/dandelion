@@ -43,7 +43,7 @@ def get_display_attributes(
     return (
         SqlRunner(connection=connection)
         .query("""
-        select 
+        select distinct
             a.id,
             a.table_id,
             a.name,
@@ -71,7 +71,7 @@ def get_rich_display_attributes(
     return (
         SqlRunner(connection=connection)
         .query("""
-        select 
+        select distinct
             a.id,
             a.table_id,
             a.name,

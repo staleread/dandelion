@@ -8,7 +8,6 @@ def get_table_rows(*, connection: Connection, table_title: str) -> list[dict]:
         SqlRunner(connection=connection)
         .query(f"""
             select * from "{table_title}"
-            order by id
         """)
         .many_rows()
     )
