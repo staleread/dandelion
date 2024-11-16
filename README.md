@@ -126,13 +126,13 @@ docker compose down -v
 - Filter patients by health status
 - Filter patients by their therapist
 
-#### 4. Special case #1
+#### 4. Patients statistics
 
 - Get info about those patients, who were examined by more than two doctors
 during this week
 - Get the number of patients diagnosed with angina during this month
 
-#### 5. Doctor's schedule for period
+#### 5. Doctors statistics
 
 - Get doctor's schedule for a week
 - Get doctor's schedule for a month
@@ -149,53 +149,28 @@ during this week
 - Get procedures performed during this week
 - Get the list of patients who received procedures during the week
 
-#### 8. Special case #2
+#### 8. Procedures and vaccination
 
 - Get a list of patients who had a fluorography on a given day 
 - Get a list of patients who did not receive scheduled vaccinations
 
-#### 9. Physiotherapy Rooms Info and more
+#### 9. Physiotherapy
 
 - Get info about all physiotherapy rooms
 - Get physiotherapy rooms schedule
 - Get the number of doctors working in EACH room during the week
 
-> [!NOTE]
-> Room shcedule must include info about
->   1. first shift
->   2. second shift
->   3. two shifts
-
-#### 10. Count of Visits
+#### 10. Visits statistics
 
 - Get the total number of visits to the clinic in a month
 - Get the total number of visits to the clinic in a month grouped by doctors' profiles
 
-It is necessary to provide the ability to call a district doctor to the
-house, to automate the issuance of various certificates and extracts for
-patients, to create work schedule of doctors and treatment rooms (in shifts on a certain day of the week).
-
 ### Domain Commands
-#### 1. Add home visit request
-
-Must include:
-- patient ID
-- address for visit (patient's home address by default)
-- purpose
-
-#### 2. Issue a certificate
+#### 1. Issue a certificate
 
 Must include:
 - issue template ID
 - info needed for a specific template
-
-#### 3. Update examination room schedule
-
-Display the calendar view of room shedule (7 groups for each day containing
-2 shifts). If the room is busy during some shift it must be colored and 
-display info about the doctor (last name and first letters of first name and
-patronymic), blank otherwise. By clicking on the shift section user should
-see a form for updating the entry or creating one if it was blank.
 
 ## Dandelion DB
 ### User Roles and Permissions
