@@ -535,3 +535,30 @@ def get_doctors_count_by_room(sql: SqlQueryRunner) -> list[dict]:
         GROUP BY room.id, room.room_number, room_type.name
         ORDER BY room.room_number;
     """).many_rows()
+
+
+def get_clinic_visits_last_month(sql: SqlQueryRunner) -> int:
+    result = sql.query("""
+        SELECT COUNT(*) as visits_count
+        FROM visit
+        WHERE visit_date >= CURRENT_DATE - INTERVAL '30 days'
+            AND visit_date <= CURRENT_DATE
+            AND home_visit_address IS NULL;
+    """).one_row()
+    return result["visits_count"]
+
+
+def get_clinic_visits_count_by_profile(sql: SqlQueryRunner) -> list[dict]:
+    return sql.query("""
+        SELECT 
+            doctor_profile_type.name as profile_name,
+            COUNT(visit.id) as visits_count
+        FROM doctor_profile_type
+        LEFT JOIN doctor ON doctor_profile_type.id = doctor.profile_id
+        LEFT JOIN visit ON doctor.id = visit.doctor_id 
+            AND visit.home_visit_address IS NULL
+            AND visit.visit_date >= CURRENT_DATE - INTERVAL '30 days'
+            AND visit.visit_date <= CURRENT_DATE
+        GROUP BY doctor_profile_type.id, doctor_profile_type.name
+        ORDER BY visits_count DESC;
+    """).many_rows()

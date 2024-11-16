@@ -26,6 +26,8 @@ from app.classic.query.service import (
     get_physiotherapy_rooms,
     get_physiotherapy_rooms_schedule,
     get_doctors_count_by_room,
+    get_clinic_visits_last_month,
+    get_clinic_visits_count_by_profile,
 )
 
 router = APIRouter(prefix="/query")
@@ -339,3 +341,25 @@ async def get_doctors_count_by_room_view(
 ):
     counts = get_doctors_count_by_room(sql)
     return template("/classic/query/doctors_count_by_room.html", {"counts": counts})
+
+
+@router.get("/visit/clinic_count")
+async def get_clinic_visits_count_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    visits_count = get_clinic_visits_last_month(sql)
+    return template(
+        "/classic/query/clinic_visits_count.html", {"visits_count": visits_count}
+    )
+
+
+@router.get("/visit/profile_count")
+async def get_visits_count_by_profile_view(
+    sql: QueryRunnerDep,
+    template: TemplateContextDep,
+):
+    visits = get_clinic_visits_count_by_profile(sql)
+    return template(
+        "/classic/query/clinic_visits_count_by_profile.html", {"visits": visits}
+    )
