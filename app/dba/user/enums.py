@@ -11,3 +11,4 @@ class Permissions(StrEnum):
     CAN_READ_PRIVATE = "can_read_private"
     CAN_MODIFY_TABLES = "can_modify_tables"
     CAN_ADD_ADMIN = "can_add_admin"
+    CAN_ADD_OWNER = "can_add_owner"
