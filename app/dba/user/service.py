@@ -78,6 +78,9 @@ def add_user(
     if not role:
         raise ValueError("Обрана роль не існує")
 
+    if role == "guest":
+        role = "user"
+
     if Permissions("can_add_" + role) not in current_user_permissions:
         raise ValueError(f"Ви не маєте прав для створення користувачів з роллю {role}")
 
